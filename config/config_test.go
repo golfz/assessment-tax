@@ -7,7 +7,7 @@ import (
 
 func TestNewWith_Default(t *testing.T) {
 	// Arrange
-	cfgGetter := func(key string) string {
+	cfgGetter := func(_ string) string {
 		return ""
 	}
 
