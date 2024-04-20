@@ -18,14 +18,12 @@ type ConfigGetter func(string) string
 type Config struct {
 	Port        int
 	DatabaseURL string
-	cfgGetter   ConfigGetter
 }
 
 func NewWith(cfgGetter ConfigGetter) *Config {
 	return &Config{
 		Port:        getInt(cfgGetter, kPort, defaultPort),
 		DatabaseURL: getString(cfgGetter, kDatabaseURL, defaultDatabaseURL),
-		cfgGetter:   cfgGetter,
 	}
 }
 
