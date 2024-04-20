@@ -4,14 +4,35 @@ import (
 	"context"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
 
+const (
+	envPort = "PORT"
+)
+
+func init() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalf("error reading config file, %s", err)
+	}
+}
+
 func main() {
+	fmt.Printf("PORT: %s\n", viper.Get(envPort))
+
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
 		time.Sleep(5 * time.Second)
@@ -23,7 +44,7 @@ func main() {
 
 	// Start server
 	go func() {
-		if err := e.Start(":1323"); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(fmt.Sprintf(":%s", os.Getenv("PORT"))); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()
