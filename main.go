@@ -2,18 +2,31 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/golfz/assessment-tax/config"
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	cfg := config.New()
+
+	db, err := sql.Open("postgres", cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("unable to open database connection: %v", err)
+	}
+
+	if err := db.Ping(); err != nil {
+		log.Fatalf("unable to connect to database: %v", err)
+	}
 
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
@@ -26,7 +39,8 @@ func main() {
 
 	// Start server
 	go func() {
-		if err := e.Start(fmt.Sprintf(":%d", cfg.Port)); err != nil && err != http.ErrServerClosed {
+		addr := fmt.Sprintf(":%d", cfg.Port)
+		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()
