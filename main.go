@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	cfg := config.New()
+	cfg := config.NewWith(os.Getenv)
 
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
