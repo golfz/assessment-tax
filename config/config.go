@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"strconv"
 )
 
@@ -36,7 +35,7 @@ func getString(fn ConfigGetter, key, defaultValue string) string {
 }
 
 func getInt(fn ConfigGetter, key string, defaultValue int) int {
-	v := os.Getenv(key)
+	v := fn(key)
 	result, err := strconv.Atoi(v)
 	if err != nil {
 		return defaultValue
