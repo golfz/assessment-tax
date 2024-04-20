@@ -13,9 +13,12 @@ const (
 	defaultDatabaseURL = "postgresql://postgres:postgres@localhost:5432/ktaxes?sslmode=disable"
 )
 
+type ConfigGetter func(string) string
+
 type Config struct {
 	Port        int
 	DatabaseURL string
+	cfgGetter   ConfigGetter
 }
 
 func New() *Config {
