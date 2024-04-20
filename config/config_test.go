@@ -12,39 +12,41 @@ func TestNewWith_Default(t *testing.T) {
 	}
 
 	// Act
-	cfg := NewWith(cfgGetter)
+	got := NewWith(cfgGetter)
 
 	// Assert
-	if cfg.Port != defaultPort {
-		t.Errorf("want %d, got %d", defaultPort, cfg.Port)
+	if got.Port != defaultPort {
+		t.Errorf("want %d, got %d", defaultPort, got.Port)
 	}
-	if cfg.DatabaseURL != defaultDatabaseURL {
-		t.Errorf("want %s, got %s", defaultDatabaseURL, cfg.DatabaseURL)
+	if got.DatabaseURL != defaultDatabaseURL {
+		t.Errorf("want %s, got %s", defaultDatabaseURL, got.DatabaseURL)
 	}
 }
 
 func TestNewWith_Custom(t *testing.T) {
 	// Arrange
-	wantPort := 1234
-	wantDatabaseURL := "database-url"
+	want := Config{
+		Port:        1234,
+		DatabaseURL: "database-url",
+	}
 	cfgGetter := func(key string) string {
 		if key == kPort {
-			return strconv.Itoa(wantPort)
+			return strconv.Itoa(want.Port)
 		}
 		if key == kDatabaseURL {
-			return wantDatabaseURL
+			return want.DatabaseURL
 		}
 		return ""
 	}
 
 	// Act
-	cfg := NewWith(cfgGetter)
+	got := NewWith(cfgGetter)
 
 	// Assert
-	if cfg.Port != wantPort {
-		t.Errorf("want %d, got %d", wantPort, cfg.Port)
+	if got.Port != want.Port {
+		t.Errorf("want %d, got %d", want.Port, got.Port)
 	}
-	if cfg.DatabaseURL != wantDatabaseURL {
-		t.Errorf("want %s, got %s", wantDatabaseURL, cfg.DatabaseURL)
+	if got.DatabaseURL != want.DatabaseURL {
+		t.Errorf("want %s, got %s", want.DatabaseURL, got.DatabaseURL)
 	}
 }
