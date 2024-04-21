@@ -18,12 +18,13 @@ func TestCalculateTax_onlyTotalIncome(t *testing.T) {
 			},
 		},
 	}
+	deduction := Deduction{Personal: 60_000.0}
 	want := TaxResult{
 		Tax: 29_000.0,
 	}
 
 	// Act
-	got, err := CalculateTax(info)
+	got, err := CalculateTax(info, deduction)
 
 	// Assert
 	fmt.Printf("got: %#v\n", got)

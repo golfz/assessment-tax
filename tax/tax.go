@@ -22,9 +22,12 @@ type TaxResult struct {
 	Tax float64
 }
 
-func CalculateTax(info TaxInformation) (TaxResult, error) {
-	personalDeduction := 60_000.0
-	taxableIncome := info.TotalIncome - personalDeduction
+type Deduction struct {
+	Personal float64
+}
+
+func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
+	taxableIncome := info.TotalIncome - deduction.Personal
 
 	// Calculate tax
 	tax := 0.0
