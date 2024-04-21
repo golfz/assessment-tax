@@ -1,5 +1,7 @@
 package tax
 
+import "math"
+
 type AllowanceType string
 
 const (
@@ -75,6 +77,19 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 	left = 1_000_000.0
 	right = 2_000_000.0
 	taxRate = 20.00
+	if netIncome > left {
+		taxableIncome := netIncome - left
+		taxRange := right - left
+		if taxableIncome > taxRange {
+			taxableIncome = right - left
+		}
+		tax += taxableIncome * (taxRate / 100.0)
+	}
+
+	// 2,000,001+ = 35%
+	left = 2_000_000.0
+	right = math.MaxFloat64
+	taxRate = 35.00
 	if netIncome > left {
 		taxableIncome := netIncome - left
 		taxRange := right - left

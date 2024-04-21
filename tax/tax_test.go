@@ -79,6 +79,18 @@ func TestCalculateTax_onlyTotalIncome(t *testing.T) {
 			deduction: Deduction{Personal: 0.0},
 			want:      TaxResult{Tax: 310_000.0},
 		},
+		{
+			name:      "rate 35%: income=2,000,001 deduction.personal=0; expect tax=310,000.35",
+			info:      TaxInformation{TotalIncome: 2_000_001.0},
+			deduction: Deduction{Personal: 0.0},
+			want:      TaxResult{Tax: 310_000.35},
+		},
+		{
+			name:      "rate 35%: income=10,000,000 deduction.personal=0; expect tax=3,110,000",
+			info:      TaxInformation{TotalIncome: 10_000_000.0},
+			deduction: Deduction{Personal: 0.0},
+			want:      TaxResult{Tax: 3_110_000.0},
+		},
 	}
 
 	for _, tc := range testcases {
