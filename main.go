@@ -7,6 +7,7 @@ import (
 	"github.com/golfz/assessment-tax/postgres"
 	"github.com/golfz/assessment-tax/tax"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"net/http"
 	"os"
@@ -34,8 +35,7 @@ func main() {
 	}
 
 	e := echo.New()
-
-	//e.Validator = validator.New()
+	e.Use(middleware.Logger())
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 

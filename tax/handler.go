@@ -7,6 +7,7 @@ import (
 )
 
 type Storer interface {
+	GetDeduction() (Deduction, error)
 }
 
 type Handler struct {
@@ -45,7 +46,10 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Err{Message: "bad request body"})
 	}
 
-	deduction := Deduction{Personal: 60_000.0}
+	deduction, err := h.store.GetDeduction()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Err{Message: "error getting deduction"})
+	}
 
 	result, err := CalculateTax(taxInfo, deduction)
 	if err != nil {
