@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/golfz/assessment-tax/config"
+	"github.com/golfz/assessment-tax/postgres"
 	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
@@ -19,9 +19,9 @@ import (
 func main() {
 	cfg := config.NewWith(os.Getenv)
 
-	db, err := sql.Open("postgres", cfg.DatabaseURL)
+	db, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("unable to open database connection: %v", err)
+		log.Fatalf("exit: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
@@ -30,7 +30,6 @@ func main() {
 
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
-		time.Sleep(5 * time.Second)
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
 
