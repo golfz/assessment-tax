@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golfz/assessment-tax/config"
 	"github.com/golfz/assessment-tax/postgres"
+	"github.com/golfz/assessment-tax/tax"
 	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
@@ -14,20 +15,25 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+
+	_ "github.com/golfz/assessment-tax/docs"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func main() {
 	cfg := config.NewWith(os.Getenv)
 
-	_, err := postgres.New(cfg.DatabaseURL)
+	pg, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("exit: %v", err)
 	}
 
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
-	})
+
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	hTax := tax.New(pg)
+	e.POST("/tax/calculations", hTax.CalculateTaxHandler)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
