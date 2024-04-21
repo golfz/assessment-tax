@@ -20,6 +20,11 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+// @title		K-Tax API
+// @version		1.0
+// @description Sophisticated K-Tax API
+// @host		localhost:8080
+// @BasePath    /
 func main() {
 	cfg := config.NewWith(os.Getenv)
 

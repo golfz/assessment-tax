@@ -14,17 +14,121 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/tax/calculations": {
+            "post": {
+                "description": "Calculate tax",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tax"
+                ],
+                "summary": "Calculate tax",
+                "parameters": [
+                    {
+                        "description": "Amount to calculate tax",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tax.TaxInformation"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tax.TaxResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "tax.Allowance": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "type": {
+                    "$ref": "#/definitions/tax.AllowanceType"
+                }
+            }
+        },
+        "tax.AllowanceType": {
+            "type": "string",
+            "enum": [
+                "donation",
+                "k-receipt"
+            ],
+            "x-enum-varnames": [
+                "AllowanceTypeDonation",
+                "AllowanceTypeKReceipt"
+            ]
+        },
+        "tax.Err": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "tax.TaxInformation": {
+            "type": "object",
+            "properties": {
+                "allowances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tax.Allowance"
+                    }
+                },
+                "totalIncome": {
+                    "type": "number"
+                },
+                "wht": {
+                    "type": "number"
+                }
+            }
+        },
+        "tax.TaxResult": {
+            "type": "object",
+            "properties": {
+                "tax": {
+                    "type": "number"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "K-Tax API",
+	Description:      "Sophisticated K-Tax API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

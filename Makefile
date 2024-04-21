@@ -22,3 +22,6 @@ docker-build:
 
 docker-run:
 	docker run -p 8080:8080 -e DATABASE_URL="host=postgres port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" ktaxes
+
+swagger:
+	swag init
