@@ -10,22 +10,48 @@ const (
 )
 
 type Allowance struct {
-	Type   AllowanceType
-	Amount float64
+	Type   AllowanceType `json:"allowanceType"`
+	Amount float64       `json:"amount"`
 }
 
 type TaxInformation struct {
-	TotalIncome float64
-	WHT         float64
-	Allowances  []Allowance
+	TotalIncome float64     `json:"totalIncome"`
+	WHT         float64     `json:"wht"`
+	Allowances  []Allowance `json:"allowances"`
 }
 
 type TaxResult struct {
-	Tax float64
+	Tax float64 `json:"tax"`
 }
 
 type Deduction struct {
 	Personal float64
+}
+
+type rate struct {
+	moreThan   float64
+	to         float64
+	percentage float64
+}
+
+var rates = []rate{
+	{moreThan: 0, to: 150_000, percentage: 0},
+	{moreThan: 150_000, to: 500_000, percentage: 10},
+	{moreThan: 500_000, to: 1_000_000, percentage: 15},
+	{moreThan: 1_000_000, to: 2_000_000, percentage: 20},
+	{moreThan: 2_000_000, to: math.MaxFloat64, percentage: 35},
+}
+
+func cal(r rate, netIncome float64) float64 {
+	if netIncome > r.moreThan {
+		taxableIncome := netIncome - r.moreThan
+		taxRange := r.to - r.moreThan
+		if taxableIncome > taxRange {
+			taxableIncome = r.to - r.moreThan
+		}
+		return taxableIncome * (r.percentage / 100.0)
+	}
+	return 0
 }
 
 func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
@@ -34,69 +60,8 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 	// Calculate tax
 	tax := 0.0
 
-	// 0 - 150,000 = 0%
-	left := 0.0
-	right := 150_000.0
-	taxRate := 0.0
-	if netIncome > left {
-		taxableIncome := netIncome - left
-		taxRange := right - left
-		if taxableIncome > taxRange {
-			taxableIncome = right - left
-		}
-		tax += taxableIncome * (taxRate / 100.0)
-	}
-
-	// 150,001 - 500,000 = 10%
-	left = 150_000.0
-	right = 500_000.0
-	taxRate = 10.00
-	if netIncome > left {
-		taxableIncome := netIncome - left
-		taxRange := right - left
-		if taxableIncome > taxRange {
-			taxableIncome = right - left
-		}
-		tax += taxableIncome * (taxRate / 100.0)
-	}
-
-	// 500,001 - 1,000,000 = 15%
-	left = 500_000.0
-	right = 1_000_000.0
-	taxRate = 15.00
-	if netIncome > left {
-		taxableIncome := netIncome - left
-		taxRange := right - left
-		if taxableIncome > taxRange {
-			taxableIncome = right - left
-		}
-		tax += taxableIncome * (taxRate / 100.0)
-	}
-
-	// 1,000,001 - 2,000,000 = 20%
-	left = 1_000_000.0
-	right = 2_000_000.0
-	taxRate = 20.00
-	if netIncome > left {
-		taxableIncome := netIncome - left
-		taxRange := right - left
-		if taxableIncome > taxRange {
-			taxableIncome = right - left
-		}
-		tax += taxableIncome * (taxRate / 100.0)
-	}
-
-	// 2,000,001+ = 35%
-	left = 2_000_000.0
-	right = math.MaxFloat64
-	taxRate = 35.00
-	if netIncome > left {
-		taxableIncome := netIncome - left
-		taxRange := right - left
-		if taxableIncome > taxRange {
-			taxableIncome = right - left
-		}
-		tax += taxableIncome * (taxRate / 100.0)
+	for _, r := range rates {
+		tax += cal(r, netIncome)
 	}
 
 	return TaxResult{
