@@ -16,3 +16,9 @@ cover:
 	go test -coverprofile=c.out ./...
 	go tool cover -html=c.out
 	rm c.out
+
+docker-build:
+	docker build -t ktaxes .
+
+docker-run:
+	docker run -p 8080:8080 -e DATABASE_URL="host=postgres port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" ktaxes
