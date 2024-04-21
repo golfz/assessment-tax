@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCalculateTax(t *testing.T) {
+func TestCalculateTax_onlyTotalIncome(t *testing.T) {
 	// Arrange
 	info := TaxInformation{
 		TotalIncome: 500_000.0,
