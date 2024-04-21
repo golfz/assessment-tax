@@ -27,7 +27,7 @@ type Deduction struct {
 }
 
 func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
-	taxableIncome := info.TotalIncome - deduction.Personal
+	netIncome := info.TotalIncome - deduction.Personal
 
 	// Calculate tax
 	tax := 0.0
@@ -36,24 +36,39 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 	left := 0.0
 	right := 150_000.0
 	taxRate := 0.0
-	if taxableIncome > left {
-		incomeForThisRate := taxableIncome - left
-		if incomeForThisRate > right {
-			incomeForThisRate = right - left
+	if netIncome > left {
+		taxableIncome := netIncome - left
+		taxRange := right - left
+		if taxableIncome > taxRange {
+			taxableIncome = right - left
 		}
-		tax += incomeForThisRate * (taxRate / 100.0)
+		tax += taxableIncome * (taxRate / 100.0)
 	}
 
 	// 150,001 - 500,000 = 10%
 	left = 150_000.0
 	right = 500_000.0
 	taxRate = 10.00
-	if taxableIncome > left {
-		incomeForThisRate := taxableIncome - left
-		if incomeForThisRate > right {
-			incomeForThisRate = right - left
+	if netIncome > left {
+		taxableIncome := netIncome - left
+		taxRange := right - left
+		if taxableIncome > taxRange {
+			taxableIncome = right - left
 		}
-		tax += incomeForThisRate * (taxRate / 100.0)
+		tax += taxableIncome * (taxRate / 100.0)
+	}
+
+	// 500,001 - 1,000,000 = 15%
+	left = 500_000.0
+	right = 1_000_000.0
+	taxRate = 15.00
+	if netIncome > left {
+		taxableIncome := netIncome - left
+		taxRange := right - left
+		if taxableIncome > taxRange {
+			taxableIncome = right - left
+		}
+		tax += taxableIncome * (taxRate / 100.0)
 	}
 
 	return TaxResult{
