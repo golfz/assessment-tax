@@ -35,6 +35,7 @@ func main() {
 	hTax := tax.New(pg)
 	e.POST("/tax/calculations", hTax.CalculateTaxHandler)
 
+	// monitor shutdown signal
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
