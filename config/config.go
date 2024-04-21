@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"strconv"
 )
 
@@ -13,28 +12,30 @@ const (
 	defaultDatabaseURL = "postgresql://postgres:postgres@localhost:5432/ktaxes?sslmode=disable"
 )
 
+type ConfigGetter func(string) string
+
 type Config struct {
 	Port        int
 	DatabaseURL string
 }
 
-func New() *Config {
+func NewWith(cfgGetter ConfigGetter) *Config {
 	return &Config{
-		Port:        getInt(kPort, defaultPort),
-		DatabaseURL: getString(kDatabaseURL, defaultDatabaseURL),
+		Port:        getInt(cfgGetter, kPort, defaultPort),
+		DatabaseURL: getString(cfgGetter, kDatabaseURL, defaultDatabaseURL),
 	}
 }
 
-func getString(key, defaultValue string) string {
-	result := os.Getenv(key)
+func getString(fn ConfigGetter, key, defaultValue string) string {
+	result := fn(key)
 	if result == "" {
 		return defaultValue
 	}
 	return result
 }
 
-func getInt(key string, defaultValue int) int {
-	v := os.Getenv(key)
+func getInt(fn ConfigGetter, key string, defaultValue int) int {
+	v := fn(key)
 	result, err := strconv.Atoi(v)
 	if err != nil {
 		return defaultValue
