@@ -71,6 +71,19 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 		tax += taxableIncome * (taxRate / 100.0)
 	}
 
+	// 1,000,001 - 2,000,000 = 20%
+	left = 1_000_000.0
+	right = 2_000_000.0
+	taxRate = 20.00
+	if netIncome > left {
+		taxableIncome := netIncome - left
+		taxRange := right - left
+		if taxableIncome > taxRange {
+			taxableIncome = right - left
+		}
+		tax += taxableIncome * (taxRate / 100.0)
+	}
+
 	return TaxResult{
 		Tax: tax,
 	}, nil
