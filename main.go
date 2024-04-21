@@ -19,13 +19,9 @@ import (
 func main() {
 	cfg := config.NewWith(os.Getenv)
 
-	db, err := postgres.New(cfg.DatabaseURL)
+	_, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("exit: %v", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		log.Fatalf("unable to connect to database: %v", err)
 	}
 
 	e := echo.New()

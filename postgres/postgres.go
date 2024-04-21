@@ -5,7 +5,11 @@ import (
 	"log"
 )
 
-func New(databaseURL string) (*sql.DB, error) {
+type Postgres struct {
+	Db *sql.DB
+}
+
+func New(databaseURL string) (*Postgres, error) {
 	db, err := sql.Open("postgres", databaseURL)
 	if err != nil {
 		log.Printf("unable to open database connection: %v", err)
@@ -17,5 +21,5 @@ func New(databaseURL string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	return db, nil
+	return &Postgres{Db: db}, nil
 }
