@@ -1,6 +1,9 @@
 package tax
 
-import "math"
+import (
+	_ "github.com/go-playground/validator/v10"
+	"math"
+)
 
 type AllowanceType string
 
@@ -15,8 +18,8 @@ type Allowance struct {
 }
 
 type TaxInformation struct {
-	TotalIncome float64     `json:"totalIncome"`
-	WHT         float64     `json:"wht"`
+	TotalIncome float64     `json:"totalIncome" validate:"required,min=0"`
+	WHT         float64     `json:"wht" validate:"min=0"`
 	Allowances  []Allowance `json:"allowances"`
 }
 
