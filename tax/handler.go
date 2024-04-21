@@ -1,6 +1,7 @@
 package tax
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -33,6 +34,23 @@ type Err struct {
 //		@Failure		500	            {object}	Err
 //		@Router			/tax/calculations [post]
 func (h *Handler) CalculateTaxHandler(c echo.Context) error {
-	t := TaxResult{Tax: 29000.0}
-	return c.JSON(http.StatusOK, t)
+	var taxInfo TaxInformation
+	err := c.Bind(&taxInfo)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Err{Message: "bad request body"})
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(taxInfo); err != nil {
+		return c.JSON(http.StatusBadRequest, Err{Message: "bad request body"})
+	}
+
+	deduction := Deduction{Personal: 60_000.0}
+
+	result, err := CalculateTax(taxInfo, deduction)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Err{Message: "error calculating tax"})
+	}
+
+	return c.JSON(http.StatusOK, result)
 }

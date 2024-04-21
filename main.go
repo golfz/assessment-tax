@@ -35,6 +35,8 @@ func main() {
 
 	e := echo.New()
 
+	//e.Validator = validator.New()
+
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	hTax := tax.New(pg)
