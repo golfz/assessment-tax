@@ -9,6 +9,11 @@ type AllowanceType string
 const (
 	AllowanceTypeDonation AllowanceType = "donation"
 	AllowanceTypeKReceipt AllowanceType = "k-receipt"
+
+	ConstraintMinPersonalDeduction float64 = 10_000.0
+	ConstraintMaxPersonalDeduction float64 = 100_000.0
+	ConstraintMaxDonationDeduction float64 = 100_000.0
+	ConstraintMaxKReceiptDeduction float64 = 100_000.0
 )
 
 type Allowance struct {
@@ -33,29 +38,33 @@ type Deduction struct {
 }
 
 type rate struct {
-	moreThan   float64
-	to         float64
+	lowerBound float64
+	upperBound float64
 	percentage float64
 }
 
 var rates = []rate{
-	{moreThan: 0, to: 150_000, percentage: 0},
-	{moreThan: 150_000, to: 500_000, percentage: 10},
-	{moreThan: 500_000, to: 1_000_000, percentage: 15},
-	{moreThan: 1_000_000, to: 2_000_000, percentage: 20},
-	{moreThan: 2_000_000, to: math.MaxFloat64, percentage: 35},
+	{lowerBound: 0, upperBound: 150_000, percentage: 0},
+	{lowerBound: 150_000, upperBound: 500_000, percentage: 10},
+	{lowerBound: 500_000, upperBound: 1_000_000, percentage: 15},
+	{lowerBound: 1_000_000, upperBound: 2_000_000, percentage: 20},
+	{lowerBound: 2_000_000, upperBound: math.MaxFloat64, percentage: 35},
 }
 
-func cal(r rate, netIncome float64) float64 {
-	if netIncome > r.moreThan {
-		taxableIncome := netIncome - r.moreThan
-		taxRange := r.to - r.moreThan
-		if taxableIncome > taxRange {
-			taxableIncome = r.to - r.moreThan
-		}
-		return taxableIncome * (r.percentage / 100.0)
+func calculateTaxableIncome(netIncome, lowerBound, upperBound float64) float64 {
+	if netIncome <= lowerBound {
+		return 0
 	}
-	return 0
+	taxableIncome := netIncome - lowerBound
+	if netIncome > upperBound {
+		taxableIncome = upperBound - lowerBound
+	}
+	return taxableIncome
+}
+
+func calculateTaxForRate(r rate, netIncome float64) float64 {
+	taxableIncome := calculateTaxableIncome(netIncome, r.lowerBound, r.upperBound)
+	return taxableIncome * (r.percentage / 100.0)
 }
 
 func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
@@ -69,7 +78,7 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 	tax := 0.0
 
 	for _, r := range rates {
-		tax += cal(r, netIncome)
+		tax += calculateTaxForRate(r, netIncome)
 	}
 
 	return TaxResult{

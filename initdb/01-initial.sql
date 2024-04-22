@@ -1,0 +1,11 @@
+-- CREATE TABLE public.configs
+-- (
+--     key character varying(32) NOT NULL,
+--     value text NOT NULL,
+--     CONSTRAINT pk_configs_key PRIMARY KEY (key)
+-- )
+--
+--     TABLESPACE pg_default;
+--
+-- ALTER TABLE IF EXISTS public.configs
+--     OWNER to postgres;
