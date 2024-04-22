@@ -82,7 +82,11 @@ func TestCalculateTax(t *testing.T) {
 		wantTax := 29_000.0
 		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
 		mock.err = nil
-		mock.deduction = Deduction{Personal: 60_000.0}
+		mock.deduction = Deduction{
+			Personal: 60_000.0,
+			KReceipt: 50_000.0,
+			Donation: 100_000.0,
+		}
 		mock.ExpectToCall(MethodGetDeduction)
 
 		// Act
@@ -167,30 +171,30 @@ func TestCalculateTax_Error(t *testing.T) {
 		assert.Equal(t, "error getting deduction", got.Message)
 	})
 
-	//t.Run("invalid deduction expect 500 with error message", func(t *testing.T) {
-	//	// Arrange
-	//	info := TaxInformation{
-	//		TotalIncome: 500_000.0,
-	//		WHT:         0.0,
-	//		Allowances: []Allowance{
-	//			{Type: AllowanceTypeDonation, Amount: 0.0},
-	//		},
-	//	}
-	//	resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
-	//	mock.deduction = Deduction{}
-	//	mock.ExpectToCall(MethodGetDeduction)
-	//
-	//	// Act
-	//	err := h.CalculateTaxHandler(c)
-	//
-	//	// Assert
-	//	mock.Verify(t)
-	//	assert.NoError(t, err)
-	//	assert.Equal(t, http.StatusInternalServerError, resp.Code)
-	//	var got Err
-	//	if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
-	//		t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
-	//	}
-	//	assert.Equal(t, "error calculating tax", got.Message)
-	//})
+	t.Run("invalid deduction expect 500 with error message", func(t *testing.T) {
+		// Arrange
+		info := TaxInformation{
+			TotalIncome: 500_000.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{Type: AllowanceTypeDonation, Amount: 0.0},
+			},
+		}
+		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
+		mock.deduction = Deduction{}
+		mock.ExpectToCall(MethodGetDeduction)
+
+		// Act
+		err := h.CalculateTaxHandler(c)
+
+		// Assert
+		mock.Verify(t)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.Equal(t, "error calculating tax", got.Message)
+	})
 }
