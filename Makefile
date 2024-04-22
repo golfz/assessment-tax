@@ -13,6 +13,9 @@ test-integration:
 	go test -v ./... -tags=integration
 
 test-cover:
+	go test -tags=unit -cover ./...
+
+test-cover-html:
 	go test -tags=unit -coverprofile=c.out ./...
 	go tool cover -html=c.out
 	rm c.out
