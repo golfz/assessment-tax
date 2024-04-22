@@ -13,9 +13,10 @@ integration-test:
 	go test -v ./... -tags=integration
 
 cover:
-	go test -coverprofile=c.out ./...
-	go tool cover -html=c.out
-	rm c.out
+#	go test -tags=unit -coverprofile=c.out ./...
+#	go tool cover -html=c.out
+#	rm c.out
+	go test -cover -tags=unit ./...
 
 docker-build:
 	docker build -t ktaxes .

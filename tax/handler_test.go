@@ -4,6 +4,7 @@ package tax
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -97,5 +98,99 @@ func TestCalculateTax(t *testing.T) {
 		}
 		assert.Equal(t, wantTax, got.Tax)
 	})
+}
 
+func TestCalculateTax_Error(t *testing.T) {
+	t.Run("no content-type expect 400 with error message", func(t *testing.T) {
+		// Arrange
+		body := struct{ Field string }{Field: "invalid"}
+		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", body)
+		c.Request().Header.Set(echo.HeaderContentType, "")
+
+		// Act
+		err := h.CalculateTaxHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, "cannot read request body", got.Message)
+	})
+
+	t.Run("incorrect body expect 400 with error message", func(t *testing.T) {
+		// Arrange
+		body := struct{ Field string }{Field: "invalid"}
+		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", body)
+
+		// Act
+		err := h.CalculateTaxHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, "bad request body", got.Message)
+	})
+
+	t.Run("GetDeduction() error expect 500 with error message", func(t *testing.T) {
+		// Arrange
+		info := TaxInformation{
+			TotalIncome: 500_000.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{Type: AllowanceTypeDonation, Amount: 0.0},
+			},
+		}
+		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
+		mock.err = errors.New("error getting deduction")
+		mock.ExpectToCall(MethodGetDeduction)
+
+		// Act
+		err := h.CalculateTaxHandler(c)
+
+		// Assert
+		mock.Verify(t)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.Equal(t, "error getting deduction", got.Message)
+	})
+
+	t.Run("invalid deduction expect 500 with error message", func(t *testing.T) {
+		// Arrange
+		info := TaxInformation{
+			TotalIncome: 500_000.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{Type: AllowanceTypeDonation, Amount: 0.0},
+			},
+		}
+		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
+		mock.deduction = Deduction{}
+		mock.ExpectToCall(MethodGetDeduction)
+
+		// Act
+		err := h.CalculateTaxHandler(c)
+
+		// Assert
+		mock.Verify(t)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.Equal(t, "error calculating tax", got.Message)
+	})
 }

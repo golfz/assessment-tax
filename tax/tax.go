@@ -27,7 +27,9 @@ type TaxResult struct {
 }
 
 type Deduction struct {
-	Personal float64
+	Personal    float64
+	KReceipt    float64
+	MaxDonation float64
 }
 
 type rate struct {
@@ -57,6 +59,10 @@ func cal(r rate, netIncome float64) float64 {
 }
 
 func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
+	//if deduction.Personal <= 10_000.0 /*|| deduction.KReceipt <= 0.0 || deduction.MaxDonation > 100_000.0*/ {
+	//	return TaxResult{}, errors.New("invalid deduction")
+	//}
+
 	netIncome := info.TotalIncome - deduction.Personal
 
 	// Calculate tax

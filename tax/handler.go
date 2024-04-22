@@ -38,7 +38,7 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	var taxInfo TaxInformation
 	err := c.Bind(&taxInfo)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Err{Message: "bad request body"})
+		return c.JSON(http.StatusBadRequest, Err{Message: "cannot read request body"})
 	}
 
 	validate := validator.New()
