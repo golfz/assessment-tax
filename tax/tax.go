@@ -1,6 +1,7 @@
 package tax
 
 import (
+	"errors"
 	"math"
 )
 
@@ -12,7 +13,10 @@ const (
 
 	ConstraintMinPersonalDeduction float64 = 10_000.0
 	ConstraintMaxPersonalDeduction float64 = 100_000.0
+
 	ConstraintMaxDonationDeduction float64 = 100_000.0
+
+	ConstraintMinKReceiptDeduction float64 = 0.0
 	ConstraintMaxKReceiptDeduction float64 = 100_000.0
 )
 
@@ -32,9 +36,9 @@ type TaxResult struct {
 }
 
 type Deduction struct {
-	Personal    float64
-	KReceipt    float64
-	MaxDonation float64
+	Personal float64
+	KReceipt float64
+	Donation float64
 }
 
 type rate struct {
@@ -51,8 +55,23 @@ var rates = []rate{
 	{lowerBound: 2_000_000, upperBound: math.MaxFloat64, percentage: 35},
 }
 
-func validateDeduction(deduction Deduction) error {
+var (
+	ErrInvalidDeduction = errors.New("invalid deduction")
+)
 
+func validateDeduction(deduction Deduction) error {
+	if deduction.Personal <= ConstraintMinPersonalDeduction || deduction.Personal > ConstraintMaxPersonalDeduction {
+		return ErrInvalidDeduction
+	}
+
+	if deduction.KReceipt <= ConstraintMinKReceiptDeduction || deduction.KReceipt > ConstraintMaxKReceiptDeduction {
+		return ErrInvalidDeduction
+	}
+
+	if deduction.Donation > ConstraintMaxDonationDeduction {
+		return ErrInvalidDeduction
+	}
+	return nil
 }
 
 func calculateTaxableIncome(netIncome, lowerBound, upperBound float64) float64 {
