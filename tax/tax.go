@@ -51,6 +51,10 @@ var rates = []rate{
 	{lowerBound: 2_000_000, upperBound: math.MaxFloat64, percentage: 35},
 }
 
+func validateDeduction(deduction Deduction) error {
+
+}
+
 func calculateTaxableIncome(netIncome, lowerBound, upperBound float64) float64 {
 	if netIncome <= lowerBound {
 		return 0
