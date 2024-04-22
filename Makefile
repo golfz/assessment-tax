@@ -6,17 +6,16 @@ quality:
 	go vet ./...
 	golangci-lint run
 
-test:
-	go test -v ./...
+test-unit:
+	go test -v ./... -tags=unit
 
-integration-test:
+test-integration:
 	go test -v ./... -tags=integration
 
-cover:
-#	go test -tags=unit -coverprofile=c.out ./...
-#	go tool cover -html=c.out
-#	rm c.out
-	go test -cover -tags=unit ./...
+test-cover:
+	go test -tags=unit -coverprofile=c.out ./...
+	go tool cover -html=c.out
+	rm c.out
 
 docker-build:
 	docker build -t ktaxes .
