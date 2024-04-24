@@ -122,7 +122,7 @@ func TestCalculateTax_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, "cannot read request body", got.Message)
+		assert.Equal(t, "cannot reading request body", got.Message)
 	})
 
 	t.Run("incorrect body expect 400 with error message", func(t *testing.T) {
