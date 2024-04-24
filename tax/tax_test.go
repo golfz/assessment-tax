@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestValidateDeduction(t *testing.T) {
+func TestValidateDeduction_Success(t *testing.T) {
 	defaultDeduction := Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
@@ -17,110 +17,58 @@ func TestValidateDeduction(t *testing.T) {
 	testcases := []struct {
 		name      string
 		deduction Deduction
-		wantError error
 	}{
 		// Default deduction
 		{
-			name: "default deduction; expect no error",
+			name: "default deduction",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: nil,
 		},
 		// personal deduction
 		{
-			name: "personal deduction < min; expect error",
-			deduction: Deduction{
-				Personal: ConstraintMinPersonalDeduction,
-				KReceipt: defaultDeduction.KReceipt,
-				Donation: defaultDeduction.Donation,
-			},
-			wantError: ErrInvalidDeduction,
-		},
-		{
-			name: "personal deduction = min; expect no error",
+			name: "personal deduction = min",
 			deduction: Deduction{
 				Personal: ConstraintMinPersonalDeduction + 0.1,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: nil,
 		},
 		{
-			name: "personal deduction = max; expect no error",
+			name: "personal deduction = max",
 			deduction: Deduction{
 				Personal: ConstraintMaxPersonalDeduction,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: nil,
-		},
-		{
-			name: "personal deduction > max; expect error",
-			deduction: Deduction{
-				Personal: ConstraintMaxPersonalDeduction + 0.1,
-				KReceipt: defaultDeduction.KReceipt,
-				Donation: defaultDeduction.Donation,
-			},
-			wantError: ErrInvalidDeduction,
 		},
 		// KReceipt deduction
 		{
-			name: "KReceipt deduction < min; expect error",
-			deduction: Deduction{
-				Personal: defaultDeduction.Personal,
-				KReceipt: ConstraintMinKReceiptDeduction,
-				Donation: defaultDeduction.Donation,
-			},
-			wantError: ErrInvalidDeduction,
-		},
-		{
-			name: "KReceipt deduction = min; expect no error",
+			name: "KReceipt deduction = min",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
 				KReceipt: ConstraintMinKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: nil,
 		},
 		{
-			name: "KReceipt deduction = max; expect no error",
+			name: "KReceipt deduction = max",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
 				KReceipt: ConstraintMaxKReceiptDeduction,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: nil,
-		},
-		{
-			name: "KReceipt deduction > max; expect error",
-			deduction: Deduction{
-				Personal: defaultDeduction.Personal,
-				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
-				Donation: defaultDeduction.Donation,
-			},
-			wantError: ErrInvalidDeduction,
 		},
 		// Donation deduction
 		{
-			name: "Donation deduction > max; expect error",
-			deduction: Deduction{
-				Personal: defaultDeduction.Personal,
-				KReceipt: defaultDeduction.KReceipt,
-				Donation: ConstraintMaxDonationDeduction + 0.1,
-			},
-			wantError: ErrInvalidDeduction,
-		},
-		{
-			name: "Donation deduction = max; expect no error",
+			name: "Donation deduction = max",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: ConstraintMaxDonationDeduction,
 			},
-			wantError: nil,
 		},
 	}
 
@@ -130,7 +78,103 @@ func TestValidateDeduction(t *testing.T) {
 			gotError := validateDeduction(tc.deduction)
 
 			// Assert
-			assert.Equal(t, tc.wantError, gotError)
+			assert.NoError(t, gotError)
+		})
+	}
+}
+
+func TestValidateDeduction_Error(t *testing.T) {
+	defaultDeduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+	// Arrange
+	testcases := []struct {
+		name      string
+		deduction Deduction
+		wantError []error
+	}{
+		// personal deduction
+		{
+			name: "personal deduction < min",
+			deduction: Deduction{
+				Personal: ConstraintMinPersonalDeduction,
+				KReceipt: defaultDeduction.KReceipt,
+				Donation: defaultDeduction.Donation,
+			},
+			wantError: []error{ErrInvalidPersonalDeduction},
+		},
+		{
+			name: "personal deduction > max",
+			deduction: Deduction{
+				Personal: ConstraintMaxPersonalDeduction + 0.1,
+				KReceipt: defaultDeduction.KReceipt,
+				Donation: defaultDeduction.Donation,
+			},
+			wantError: []error{ErrInvalidPersonalDeduction},
+		},
+		// KReceipt deduction
+		{
+			name: "KReceipt deduction < min",
+			deduction: Deduction{
+				Personal: defaultDeduction.Personal,
+				KReceipt: ConstraintMinKReceiptDeduction,
+				Donation: defaultDeduction.Donation,
+			},
+			wantError: []error{ErrInvalidKReceiptDeduction},
+		},
+		{
+			name: "KReceipt deduction > max",
+			deduction: Deduction{
+				Personal: defaultDeduction.Personal,
+				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
+				Donation: defaultDeduction.Donation,
+			},
+			wantError: []error{ErrInvalidKReceiptDeduction},
+		},
+		// Donation deduction
+		{
+			name: "Donation deduction > max",
+			deduction: Deduction{
+				Personal: defaultDeduction.Personal,
+				//KReceipt: defaultDeduction.KReceipt,
+				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
+				Donation: ConstraintMaxDonationDeduction + 0.1,
+			},
+			wantError: []error{ErrInvalidDonationDeduction},
+		},
+		// Multiple errors
+		{
+			name: "personal deduction > max, KReceipt deduction > max",
+			deduction: Deduction{
+				Personal: ConstraintMaxPersonalDeduction + 0.1,
+				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
+				Donation: defaultDeduction.Donation,
+			},
+			wantError: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction},
+		},
+		{
+			name: "personal deduction > max, KReceipt deduction > max, Donation deduction > max",
+			deduction: Deduction{
+				Personal: ConstraintMaxPersonalDeduction + 0.1,
+				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
+				Donation: ConstraintMaxDonationDeduction + 0.1,
+			},
+			wantError: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction, ErrInvalidDonationDeduction},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			gotError := validateDeduction(tc.deduction)
+
+			// Assert
+			assert.Error(t, gotError)
+			for _, wantErr := range tc.wantError {
+				assert.ErrorIs(t, gotError, wantErr)
+			}
 		})
 	}
 }
@@ -240,19 +284,44 @@ func TestCalculateTax_Success_InputOnlyTotalIncome(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_Error_InputOnlyTotalIncome(t *testing.T) {
-	// Arrange
-	invalidDeduction := Deduction{
-		Personal: ConstraintMaxPersonalDeduction + 0.1,
-		KReceipt: 50_000.0,
-		Donation: 100_000.0,
-	}
+func TestCalculateTax_Error_InvalidDeduction(t *testing.T) {
+	t.Run("personal deduction > max", func(t *testing.T) {
+		// Arrange
+		invalidDeduction := Deduction{
+			Personal: ConstraintMaxPersonalDeduction + 0.1,
+			KReceipt: 50_000.0,
+			Donation: 100_000.0,
+		}
 
-	// Act
-	got, err := CalculateTax(TaxInformation{TotalIncome: 100_000.0}, invalidDeduction)
+		// Act
+		got, err := CalculateTax(TaxInformation{TotalIncome: 100_000.0}, invalidDeduction)
 
-	// Assert
-	assert.Error(t, err)
-	assert.ErrorIs(t, err, ErrInvalidDeduction)
-	assert.Equal(t, TaxResult{}, got)
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidDeduction)
+		assert.ErrorIs(t, err, ErrInvalidPersonalDeduction)
+		assert.NotErrorIs(t, err, ErrInvalidKReceiptDeduction)
+		assert.NotErrorIs(t, err, ErrInvalidDonationDeduction)
+		assert.Equal(t, TaxResult{}, got)
+	})
+
+	t.Run("KReceipt deduction > max and donation deduction > max", func(t *testing.T) {
+		// Arrange
+		invalidDeduction := Deduction{
+			Personal: 60_000.0,
+			KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
+			Donation: ConstraintMaxDonationDeduction + 0.1,
+		}
+
+		// Act
+		got, err := CalculateTax(TaxInformation{TotalIncome: 100_000.0}, invalidDeduction)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidDeduction)
+		assert.ErrorIs(t, err, ErrInvalidKReceiptDeduction)
+		assert.ErrorIs(t, err, ErrInvalidDonationDeduction)
+		assert.NotErrorIs(t, err, ErrInvalidPersonalDeduction)
+		assert.Equal(t, TaxResult{}, got)
+	})
 }

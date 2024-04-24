@@ -57,21 +57,25 @@ var rates = []rate{
 
 var (
 	ErrInvalidDeduction = errors.New("invalid deduction")
+
+	ErrInvalidPersonalDeduction = errors.New("invalid personal deduction")
+	ErrInvalidKReceiptDeduction = errors.New("invalid k-receipt deduction")
+	ErrInvalidDonationDeduction = errors.New("invalid donation deduction")
 )
 
-func validateDeduction(deduction Deduction) error {
+func validateDeduction(deduction Deduction) (err error) {
 	if deduction.Personal <= ConstraintMinPersonalDeduction || deduction.Personal > ConstraintMaxPersonalDeduction {
-		return ErrInvalidDeduction
+		err = errors.Join(err, ErrInvalidPersonalDeduction)
 	}
 
 	if deduction.KReceipt <= ConstraintMinKReceiptDeduction || deduction.KReceipt > ConstraintMaxKReceiptDeduction {
-		return ErrInvalidDeduction
+		err = errors.Join(err, ErrInvalidKReceiptDeduction)
 	}
 
 	if deduction.Donation > ConstraintMaxDonationDeduction {
-		return ErrInvalidDeduction
+		err = errors.Join(err, ErrInvalidDonationDeduction)
 	}
-	return nil
+	return
 }
 
 func calculateTaxableIncome(netIncome, lowerBound, upperBound float64) float64 {
@@ -93,6 +97,7 @@ func calculateTaxForRate(r rate, netIncome float64) float64 {
 func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 	err := validateDeduction(deduction)
 	if err != nil {
+		err = errors.Join(err, ErrInvalidDeduction)
 		return TaxResult{}, err
 	}
 

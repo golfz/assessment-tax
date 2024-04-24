@@ -69,7 +69,7 @@ func setup(method, url string, body interface{}) (*httptest.ResponseRecorder, ec
 	return rec, c, h, mock
 }
 
-func TestCalculateTax(t *testing.T) {
+func TestCalculateTax_Success(t *testing.T) {
 	t.Run("income=500,000 expect 200 OK with tax=29,000", func(t *testing.T) {
 		// Arrange
 		info := TaxInformation{
