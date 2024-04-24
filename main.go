@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/golfz/assessment-tax/config"
+	"github.com/golfz/assessment-tax/postgres"
+	"github.com/golfz/assessment-tax/tax"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"net/http"
 	"os"
@@ -14,26 +16,33 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+
+	_ "github.com/golfz/assessment-tax/docs"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+// @title		K-Tax API
+// @version		1.0
+// @description Sophisticated K-Tax API
+// @host		localhost:8080
+// @BasePath    /
 func main() {
 	cfg := config.NewWith(os.Getenv)
 
-	db, err := sql.Open("postgres", cfg.DatabaseURL)
+	pg, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("unable to open database connection: %v", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		log.Fatalf("unable to connect to database: %v", err)
+		log.Fatalf("exit: %v", err)
 	}
 
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		time.Sleep(5 * time.Second)
-		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
-	})
+	e.Use(middleware.Logger())
 
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	hTax := tax.New(pg)
+	e.POST("/tax/calculations", hTax.CalculateTaxHandler)
+
+	// monitor shutdown signal
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

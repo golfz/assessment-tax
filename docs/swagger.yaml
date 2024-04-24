@@ -1,0 +1,76 @@
+basePath: /
+definitions:
+  tax.Allowance:
+    properties:
+      amount:
+        type: number
+      type:
+        $ref: '#/definitions/tax.AllowanceType'
+    type: object
+  tax.AllowanceType:
+    enum:
+    - donation
+    - k-receipt
+    type: string
+    x-enum-varnames:
+    - AllowanceTypeDonation
+    - AllowanceTypeKReceipt
+  tax.Err:
+    properties:
+      message:
+        type: string
+    type: object
+  tax.TaxInformation:
+    properties:
+      allowances:
+        items:
+          $ref: '#/definitions/tax.Allowance'
+        type: array
+      totalIncome:
+        type: number
+      wht:
+        type: number
+    type: object
+  tax.TaxResult:
+    properties:
+      tax:
+        type: number
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Sophisticated K-Tax API
+  title: K-Tax API
+  version: "1.0"
+paths:
+  /tax/calculations:
+    post:
+      consumes:
+      - application/json
+      description: Calculate tax
+      parameters:
+      - description: Amount to calculate tax
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/tax.TaxInformation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tax.TaxResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tax.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tax.Err'
+      summary: Calculate tax
+      tags:
+      - tax
+swagger: "2.0"

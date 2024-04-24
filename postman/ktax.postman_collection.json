@@ -1,0 +1,152 @@
+{
+	"info": {
+		"_postman_id": "47a4a0ab-90bc-455e-8385-8c9860a4671d",
+		"name": "ktax",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "537071"
+	},
+	"item": [
+		{
+			"name": "EXP1: calculate-tax (success)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"expect status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"expect tax is 29000\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.tax).to.eql(29000);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/tax/calculations",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"tax",
+						"calculations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP1: calculate-tax (income<0, code 400)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"expect status code is 400\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test('expect json has message', function() {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('message')\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"totalIncome\": -500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/tax/calculations",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"tax",
+						"calculations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP1: calculate-tax (no content-type, code 400)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"expect status code is 400\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test('expect json has message', function() {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('message')\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/tax/calculations",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"tax",
+						"calculations"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

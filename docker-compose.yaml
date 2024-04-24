@@ -1,6 +1,8 @@
+version: "3.8"
 services:
   postgres:
     image: postgres:16
+    user: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -8,4 +10,4 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - ./db:/docker-entrypoint-initdb.d/
+      - ./initdb:/docker-entrypoint-initdb.d/

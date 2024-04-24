@@ -1,0 +1,43 @@
+version: "3.8"
+
+networks:
+  goapp-network:
+    driver: bridge
+
+services:
+  goapp:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ktaxes?sslmode=disable
+      - PORT=8080
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - goapp-network
+
+  db:
+    image: postgres:16
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ktaxes
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - goapp-network
+
+
+
+
+
