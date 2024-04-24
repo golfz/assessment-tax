@@ -1,20 +1,33 @@
 version: "3.8"
 
 networks:
-  integration-test:
+  e2e-test-network:
     driver: bridge
 
 services:
+  e2e-postman:
+    image: postman/newman:6-alpine
+    volumes:
+      - ./postman:/postman
+    command:
+      run /postman/ktax.postman_collection.json
+      -e /postman/ktax-e2e.postman_environment.json
+    depends_on:
+      - goapp
+    networks:
+      - e2e-test-network
+
   goapp:
     build:
       context: .
-      dockerfile: ./Dockerfile.it-test
+      dockerfile: ./Dockerfile
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ktaxes?sslmode=disable
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
-      - integration-test
+      - e2e-test-network
 
   postgres:
     image: postgres:16
@@ -25,8 +38,13 @@ services:
       POSTGRES_DB: ktaxes
     volumes:
       - ./initdb:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
-      - integration-test
+      - e2e-test-network
 
 
 

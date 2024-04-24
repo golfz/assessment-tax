@@ -9,10 +9,6 @@ quality:
 test-unit:
 	go test -v ./... -tags=unit
 
-test-integration:
-	docker-compose -f docker-compose.it-test.yaml down && \
-	docker-compose -f docker-compose.it-test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from app-it-test
-
 test-cover:
 	go test -tags=unit -cover ./...
 
@@ -20,6 +16,14 @@ test-cover-html:
 	go test -tags=unit -coverprofile=c.out ./...
 	go tool cover -html=c.out
 	rm c.out
+
+test-integration:
+	docker-compose -f docker-compose.it-test.yaml down && \
+	docker-compose -f docker-compose.it-test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from it-test-goapp
+
+test-e2e:
+	docker-compose -f docker-compose.e2e-test.yaml down && \
+	docker-compose -f docker-compose.e2e-test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from e2e-postman
 
 docker-build:
 	docker build -t ktaxes .

@@ -5,14 +5,15 @@ networks:
     driver: bridge
 
 services:
-  app-it-test:
+  it-test-goapp:
     build:
       context: .
       dockerfile: ./Dockerfile.it-test
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ktaxes?sslmode=disable
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - it-test-network
 
@@ -25,6 +26,11 @@ services:
       POSTGRES_DB: ktaxes
     volumes:
       - ./initdb:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - it-test-network
 
