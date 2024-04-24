@@ -11,7 +11,7 @@ test-unit:
 
 test-integration:
 	docker-compose -f docker-compose.it-test.yaml down && \
-	docker-compose -f docker-compose.it-test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from app_integration_tests
+	docker-compose -f docker-compose.it-test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from app-it-test
 
 test-cover:
 	go test -tags=unit -cover ./...
