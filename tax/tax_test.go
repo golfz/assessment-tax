@@ -4,7 +4,6 @@ package tax
 
 import (
 	"github.com/stretchr/testify/assert"
-	"reflect"
 	"testing"
 )
 
@@ -18,7 +17,7 @@ func TestValidateDeduction(t *testing.T) {
 	testcases := []struct {
 		name      string
 		deduction Deduction
-		want      error
+		wantError error
 	}{
 		// Default deduction
 		{
@@ -28,7 +27,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			want: nil,
+			wantError: nil,
 		},
 		// personal deduction
 		{
@@ -38,7 +37,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			want: ErrInvalidDeduction,
+			wantError: ErrInvalidDeduction,
 		},
 		{
 			name: "personal deduction = min; expect no error",
@@ -47,7 +46,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			want: nil,
+			wantError: nil,
 		},
 		{
 			name: "personal deduction = max; expect no error",
@@ -56,7 +55,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			want: nil,
+			wantError: nil,
 		},
 		{
 			name: "personal deduction > max; expect error",
@@ -65,7 +64,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			want: ErrInvalidDeduction,
+			wantError: ErrInvalidDeduction,
 		},
 		// KReceipt deduction
 		{
@@ -75,7 +74,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: ConstraintMinKReceiptDeduction,
 				Donation: defaultDeduction.Donation,
 			},
-			want: ErrInvalidDeduction,
+			wantError: ErrInvalidDeduction,
 		},
 		{
 			name: "KReceipt deduction = min; expect no error",
@@ -84,7 +83,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: ConstraintMinKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
-			want: nil,
+			wantError: nil,
 		},
 		{
 			name: "KReceipt deduction = max; expect no error",
@@ -93,7 +92,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: ConstraintMaxKReceiptDeduction,
 				Donation: defaultDeduction.Donation,
 			},
-			want: nil,
+			wantError: nil,
 		},
 		{
 			name: "KReceipt deduction > max; expect error",
@@ -102,7 +101,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
-			want: ErrInvalidDeduction,
+			wantError: ErrInvalidDeduction,
 		},
 		// Donation deduction
 		{
@@ -112,7 +111,7 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: ConstraintMaxDonationDeduction + 0.1,
 			},
-			want: ErrInvalidDeduction,
+			wantError: ErrInvalidDeduction,
 		},
 		{
 			name: "Donation deduction = max; expect no error",
@@ -121,24 +120,22 @@ func TestValidateDeduction(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: ConstraintMaxDonationDeduction,
 			},
-			want: nil,
+			wantError: nil,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			got := validateDeduction(tc.deduction)
+			gotError := validateDeduction(tc.deduction)
 
 			// Assert
-			if !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("validateDeduction() = %v, want %v", got, tc.want)
-			}
+			assert.Equal(t, tc.wantError, gotError)
 		})
 	}
 }
 
-func TestCalculateTax_onlyTotalIncome_success(t *testing.T) {
+func TestCalculateTax_Success_InputOnlyTotalIncome(t *testing.T) {
 	// Arrange
 	defaultDeduction := Deduction{
 		Personal: 60_000.0,
@@ -237,18 +234,13 @@ func TestCalculateTax_onlyTotalIncome_success(t *testing.T) {
 			got, err := CalculateTax(tc.info, tc.deduction)
 
 			// Assert
-			if err != nil {
-				t.Errorf("CalculateTax() error = %v", err)
-				return
-			}
-			if !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("CalculateTax() = %v, want %v", got, tc.want)
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
 
-func TestCalculateTax_onlyTotalIncome_error(t *testing.T) {
+func TestCalculateTax_Error_InputOnlyTotalIncome(t *testing.T) {
 	// Arrange
 	invalidDeduction := Deduction{
 		Personal: ConstraintMaxPersonalDeduction + 0.1,
