@@ -389,6 +389,52 @@ func TestCalculateTax_Success_InputOnlyTotalIncome(t *testing.T) {
 	}
 }
 
+func TestCalculateTax_Success_from_TotalIncome_and_WHT(t *testing.T) {
+	// Arrange
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+	testcases := []struct {
+		name      string
+		info      TaxInformation
+		deduction Deduction
+		want      TaxResult
+	}{
+		{
+			name:      "tax > WHT; expect tax>0",
+			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 25_000.0},
+			deduction: deduction,
+			want:      TaxResult{Tax: 4000.0, TaxRefund: 0.0},
+		},
+		{
+			name:      "tax = WHT; expect tax=0",
+			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 29_000.0},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0, TaxRefund: 0.0},
+		},
+		{
+			name:      "tax < WHT; expect taxRefund>0",
+			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 39_000.0},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			got, err := CalculateTax(tc.info, tc.deduction)
+
+			// Assert
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, got)
+		})
+
+	}
+}
+
 func TestCalculateTax_Error_InvalidTaxInformation(t *testing.T) {
 	deduction := Deduction{
 		Personal: 60_000.0,

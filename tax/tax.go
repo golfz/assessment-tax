@@ -32,7 +32,8 @@ type TaxInformation struct {
 }
 
 type TaxResult struct {
-	Tax float64 `json:"tax"`
+	Tax       float64 `json:"tax,omitempty"`
+	TaxRefund float64 `json:"taxRefund,omitempty"`
 }
 
 type Deduction struct {
@@ -144,7 +145,15 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 		tax += calculateTaxForRate(r, netIncome)
 	}
 
+	tax -= info.WHT
+	taxRefund := 0.0
+	if tax < 0 {
+		taxRefund = -tax
+		tax = 0
+	}
+
 	return TaxResult{
-		Tax: tax,
+		Tax:       tax,
+		TaxRefund: taxRefund,
 	}, nil
 }
