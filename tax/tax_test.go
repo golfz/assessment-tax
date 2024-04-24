@@ -7,6 +7,111 @@ import (
 	"testing"
 )
 
+func TestValidateTaxInformation_Success(t *testing.T) {
+	// Arrange
+	testcases := []struct {
+		name string
+		info TaxInformation
+	}{
+		{
+			name: "total income = 0",
+			info: TaxInformation{TotalIncome: 0.0},
+		},
+		{
+			name: "total income = 100,000",
+			info: TaxInformation{TotalIncome: 100_000.0},
+		},
+		{
+			name: "WHT = 0",
+			info: TaxInformation{TotalIncome: 100_000.0, WHT: 0.0},
+		},
+		{
+			name: "WHT < total income",
+			info: TaxInformation{TotalIncome: 100_000.0, WHT: 10_000.0},
+		},
+		{
+			name: "WHT = total income",
+			info: TaxInformation{TotalIncome: 100_000.0, WHT: 100_000.0},
+		},
+		{
+			name: "allowance = 0 or allowance > 0",
+			info: TaxInformation{
+				TotalIncome: 100_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+					{Type: AllowanceTypeKReceipt, Amount: 10_000.0},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			gotError := validateTaxInformation(tc.info)
+
+			// Assert
+			assert.NoError(t, gotError)
+		})
+	}
+}
+
+func TestValidateTaxInformation_Error(t *testing.T) {
+	// Arrange
+	testcases := []struct {
+		name  string
+		info  TaxInformation
+		error []error
+	}{
+		{
+			name:  "total income < 0",
+			info:  TaxInformation{TotalIncome: -1.0},
+			error: []error{ErrInvalidTotalIncome},
+		},
+		{
+			name:  "WHT < 0",
+			info:  TaxInformation{TotalIncome: 100_000.0, WHT: -1.0},
+			error: []error{ErrInvalidWHT},
+		},
+		{
+			name:  "WHT > income",
+			info:  TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0},
+			error: []error{ErrInvalidWHT},
+		},
+		{
+			name:  "total income < 0 and WHT < 0",
+			info:  TaxInformation{TotalIncome: -1.0, WHT: -1.0},
+			error: []error{ErrInvalidTotalIncome, ErrInvalidWHT},
+		},
+		{
+			name: "some allowance < 0",
+			info: TaxInformation{
+				TotalIncome: 100_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: -1.0},
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+					{Type: AllowanceTypeKReceipt, Amount: 10_000.0},
+				},
+			},
+			error: []error{ErrInvalidAllowanceAmount},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			gotError := validateTaxInformation(tc.info)
+
+			// Assert
+			assert.Error(t, gotError)
+
+			for _, wantErr := range tc.error {
+				assert.ErrorIs(t, gotError, wantErr)
+			}
+		})
+	}
+}
+
 func TestValidateDeduction_Success(t *testing.T) {
 	defaultDeduction := Deduction{
 		Personal: 60_000.0,
@@ -282,6 +387,85 @@ func TestCalculateTax_Success_InputOnlyTotalIncome(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		})
 	}
+}
+
+func TestCalculateTax_Error_InvalidTaxInformation(t *testing.T) {
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	t.Run("total income < 0", func(t *testing.T) {
+		// Arrange
+		invalidInfo := TaxInformation{TotalIncome: -1.0}
+
+		// Act
+		got, err := CalculateTax(invalidInfo, deduction)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidTaxInformation)
+		assert.ErrorIs(t, err, ErrInvalidTotalIncome)
+		assert.NotErrorIs(t, err, ErrInvalidWHT)
+		assert.NotErrorIs(t, err, ErrInvalidAllowanceAmount)
+		assert.Equal(t, TaxResult{}, got)
+	})
+
+	t.Run("WHT < 0", func(t *testing.T) {
+		// Arrange
+		invalidInfo := TaxInformation{TotalIncome: 100_000.0, WHT: -1.0}
+
+		// Act
+		got, err := CalculateTax(invalidInfo, deduction)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidTaxInformation)
+		assert.ErrorIs(t, err, ErrInvalidWHT)
+		assert.NotErrorIs(t, err, ErrInvalidTotalIncome)
+		assert.NotErrorIs(t, err, ErrInvalidAllowanceAmount)
+		assert.Equal(t, TaxResult{}, got)
+	})
+
+	t.Run("WHT > total income", func(t *testing.T) {
+		// Arrange
+		invalidInfo := TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0}
+
+		// Act
+		got, err := CalculateTax(invalidInfo, Deduction{})
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidTaxInformation)
+		assert.ErrorIs(t, err, ErrInvalidWHT)
+		assert.NotErrorIs(t, err, ErrInvalidTotalIncome)
+		assert.NotErrorIs(t, err, ErrInvalidAllowanceAmount)
+		assert.Equal(t, TaxResult{}, got)
+	})
+
+	t.Run("some allowance < 0", func(t *testing.T) {
+		// Arrange
+		invalidInfo := TaxInformation{
+			TotalIncome: 100_000.0,
+			Allowances: []Allowance{
+				{Type: AllowanceTypeDonation, Amount: -1.0},
+				{Type: AllowanceTypeDonation, Amount: 0.0},
+				{Type: AllowanceTypeKReceipt, Amount: 10_000.0},
+			},
+		}
+
+		// Act
+		got, err := CalculateTax(invalidInfo, deduction)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidTaxInformation)
+		assert.ErrorIs(t, err, ErrInvalidAllowanceAmount)
+		assert.NotErrorIs(t, err, ErrInvalidTotalIncome)
+		assert.NotErrorIs(t, err, ErrInvalidWHT)
+		assert.Equal(t, TaxResult{}, got)
+	})
 }
 
 func TestCalculateTax_Error_InvalidDeduction(t *testing.T) {
