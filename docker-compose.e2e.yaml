@@ -1,0 +1,34 @@
+version: "3.8"
+
+networks:
+  integration-test:
+    driver: bridge
+
+services:
+  goapp:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.it-test
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ktaxes?sslmode=disable
+    depends_on:
+      - postgres
+    networks:
+      - integration-test
+
+  postgres:
+    image: postgres:16
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ktaxes
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d/
+    networks:
+      - integration-test
+
+
+
+
+
