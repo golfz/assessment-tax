@@ -1,4 +1,4 @@
-FROM golang:1.22.2-alpine3.18 as build-base
+FROM golang:1.22.2-alpine3.18
 
 WORKDIR /app
 
@@ -8,4 +8,4 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 go test -v -tags=integration ./...
+CMD CGO_ENABLED=0 go test -v -tags=integration ./...
