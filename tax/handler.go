@@ -38,21 +38,25 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	var taxInfo TaxInformation
 	err := c.Bind(&taxInfo)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Err{Message: "cannot read request body"})
+		c.Logger().Printf("error reading request body: %v", err)
+		return c.JSON(http.StatusBadRequest, Err{Message: "cannot reading request body"})
 	}
 
 	validate := validator.New()
 	if err := validate.Struct(taxInfo); err != nil {
+		c.Logger().Printf("error validating request body: %v", err)
 		return c.JSON(http.StatusBadRequest, Err{Message: "bad request body"})
 	}
 
 	deduction, err := h.store.GetDeduction()
 	if err != nil {
+		c.Logger().Printf("error getting deduction: %v", err)
 		return c.JSON(http.StatusInternalServerError, Err{Message: "error getting deduction"})
 	}
 
 	result, err := CalculateTax(taxInfo, deduction)
 	if err != nil {
+		c.Logger().Printf("error calculating tax: %v", err)
 		return c.JSON(http.StatusInternalServerError, Err{Message: "error calculating tax"})
 	}
 

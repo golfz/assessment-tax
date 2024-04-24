@@ -17,7 +17,7 @@ import (
 	"testing"
 )
 
-func TestCalculateTax_Success_Integration(t *testing.T) {
+func TestCalculateTax_Integration_Success(t *testing.T) {
 	t.Run("CalculateTax_Success_Integration", func(t *testing.T) {
 		// Arrange
 		cfg := config.NewWith(os.Getenv)
