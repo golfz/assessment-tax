@@ -1,6 +1,3 @@
-run:
-	DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" PORT=8080 go run main.go
-
 quality:
 	go fmt ./...
 	go vet ./...
@@ -28,8 +25,25 @@ test-e2e:
 docker-build:
 	docker build -t ktaxes .
 
-docker-run:
+docker-run-image:
 	docker run -p 8080:8080 -e DATABASE_URL="host=postgres port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" ktaxes
+
+run-db:
+	docker-compose -f docker-compose.yaml down && \
+	docker-compose -f docker-compose.yaml up
+
+down-db:
+	docker-compose -f docker-compose.yaml down
+
+run-app:
+	DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" PORT=8080 go run main.go
+
+run-local:
+	docker-compose -f docker-compose.local.yaml down && \
+    docker-compose -f docker-compose.local.yaml up --build --force-recreate --abort-on-container-exit
+
+down-local:
+	docker-compose -f docker-compose.local.yaml down
 
 swagger:
 	swag init
