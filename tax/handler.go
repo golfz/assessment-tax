@@ -1,6 +1,7 @@
 package tax
 
 import (
+	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -45,7 +46,7 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	validate := validator.New()
 	if err := validate.Struct(taxInfo); err != nil {
 		c.Logger().Printf("error validating request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: "bad request body"})
+		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidTaxInformation.Error()})
 	}
 
 	deduction, err := h.store.GetDeduction()
@@ -57,6 +58,9 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	result, err := CalculateTax(taxInfo, deduction)
 	if err != nil {
 		c.Logger().Printf("error calculating tax: %v", err)
+		if errors.Is(err, ErrInvalidTaxInformation) {
+			return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidTaxInformation.Error()})
+		}
 		return c.JSON(http.StatusInternalServerError, Err{Message: "error calculating tax"})
 	}
 

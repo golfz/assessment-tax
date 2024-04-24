@@ -141,7 +141,7 @@ func TestCalculateTax_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, "bad request body", got.Message)
+		assert.Equal(t, ErrInvalidTaxInformation.Error(), got.Message)
 	})
 
 	t.Run("GetDeduction() error expect 500 with error message", func(t *testing.T) {
@@ -196,5 +196,53 @@ func TestCalculateTax_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.Equal(t, "error calculating tax", got.Message)
+	})
+
+	t.Run("invalid total income expect 400 with error message", func(t *testing.T) {
+		// Arrange
+		info := TaxInformation{
+			TotalIncome: -1,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{Type: AllowanceTypeDonation, Amount: 0.0},
+			},
+		}
+		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", info)
+
+		// Act
+		err := h.CalculateTaxHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.Equal(t, ErrInvalidTaxInformation.Error(), got.Message)
+	})
+
+	t.Run("invalid allowance amount expect 400 with error message", func(t *testing.T) {
+		// Arrange
+		info := TaxInformation{
+			TotalIncome: 100_000.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{Type: AllowanceTypeDonation, Amount: -10.0},
+			},
+		}
+		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", info)
+
+		// Act
+		err := h.CalculateTaxHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.Equal(t, ErrInvalidTaxInformation.Error(), got.Message)
 	})
 }
