@@ -78,50 +78,47 @@ func TestGetDeduction_Success(t *testing.T) {
 }
 
 func TestGetDeduction_Error(t *testing.T) {
-	testcases := []struct {
-		name      string
-		rows      *sqlmock.Rows
-		expectSQL string
-		want      tax.Deduction
-	}{
-		{
-			name: "cannot query from unknown_table expect error",
-			rows: sqlmock.NewRows([]string{"name", "amount"}).
-				AddRow("personal", "60000.00").
-				AddRow("k-receipt", "50000.00").
-				AddRow("donation", "100000.00").
-				AddRow("ignore_field", "10000.00"),
-			expectSQL: `SELECT name, amount FROM unknown_table`,
-			want:      tax.Deduction{},
-		},
-		{
-			name: "cannot scan row because not enough column expect error",
-			rows: sqlmock.NewRows([]string{"name"}).
-				AddRow("personal").
-				AddRow("k-receipt").
-				AddRow("donation"),
-			expectSQL: `SELECT name, amount FROM deductions`,
-			want:      tax.Deduction{},
-		},
-	}
+	t.Run("query error, expect error with zero value", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+		}
+		defer db.Close()
+		mock.ExpectQuery(`SELECT name, amount FROM deductions`).WillReturnError(ErrCannotQueryDeduction)
+		pg := Postgres{Db: db}
+		wantDeduction := tax.Deduction{}
 
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Arrange
-			db, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-			}
-			defer db.Close()
-			mock.ExpectQuery(tc.expectSQL).WillReturnRows(tc.rows)
-			pg := Postgres{Db: db}
+		// Act
+		gotDeduction, err := pg.GetDeduction()
 
-			// Act
-			deduction, err := pg.GetDeduction()
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrCannotQueryDeduction)
+		assert.Equal(t, wantDeduction, gotDeduction)
+	})
 
-			// Assert
-			assert.Error(t, err)
-			assert.Equal(t, tc.want, deduction)
-		})
-	}
+	t.Run("scan row error (amount is not float), expect error with zero value", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+		}
+		defer db.Close()
+		rows := sqlmock.NewRows([]string{"name", "amount"}).
+			AddRow("personal", "abcdef").
+			AddRow("k-receipt", "50000.00").
+			AddRow("donation", "100000.00")
+		mock.ExpectQuery(`SELECT name, amount FROM deductions`).WillReturnRows(rows)
+		pg := Postgres{Db: db}
+		wantDeduction := tax.Deduction{}
+
+		// Act
+		gotDeduction, err := pg.GetDeduction()
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrCannotScanDeduction)
+		assert.Equal(t, wantDeduction, gotDeduction)
+	})
 }
