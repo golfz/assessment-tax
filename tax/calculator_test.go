@@ -162,7 +162,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_FromIncomeAndWHT_ExpectSuccess(t *testing.T) {
+func TestCalculateTax_Success(t *testing.T) {
 	// Arrange
 	deduction := Deduction{
 		Personal: 60_000.0,
@@ -176,55 +176,82 @@ func TestCalculateTax_FromIncomeAndWHT_ExpectSuccess(t *testing.T) {
 		want      TaxResult
 	}{
 		{
-			name:      "tax > WHT; expect tax>0",
-			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 25_000.0},
+			name: "EXP01: only income, net-income=290,000 (rate=10%); expect tax=29,000",
+			info: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
 			deduction: deduction,
-			want:      TaxResult{Tax: 4000.0, TaxRefund: 0.0},
+			want:      TaxResult{Tax: 29_000.0},
 		},
 		{
-			name:      "tax = WHT; expect tax=0",
-			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 29_000.0},
+			name: "only income, net-income=150,000 (rate=0%); expect tax=0",
+			info: TaxInformation{
+				TotalIncome: 210_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
 			deduction: deduction,
-			want:      TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			want:      TaxResult{Tax: 0.0},
 		},
 		{
-			name:      "tax < WHT; expect taxRefund>0",
-			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 39_000.0},
+			name: "only income, net-income=0 (rate=0%); expect tax=0",
+			info: TaxInformation{
+				TotalIncome: 60_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0},
+		},
+		{
+			name: "EXP02: tax>wht; expect tax=4,000",
+			info: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         25_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 4_000.0},
+		},
+		{
+			name: "tax=wht; expect tax=0",
+			info: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         29_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0},
+		},
+		{
+			name: "tax<wht; expect taxRefund=10,000",
+			info: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         39_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
 			deduction: deduction,
 			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Act
-			got, err := CalculateTax(tc.info, tc.deduction)
-
-			// Assert
-			assert.NoError(t, err)
-			assert.Equal(t, tc.want, got)
-		})
-
-	}
-}
-
-func TestCalculateTax_FromIncomeAndWhtAndAllowance_ExpectSuccess(t *testing.T) {
-	// Arrange
-	deduction := Deduction{
-		Personal: 60_000.0,
-		KReceipt: 50_000.0,
-		Donation: 100_000.0,
-	}
-	testcases := []struct {
-		name      string
-		info      TaxInformation
-		deduction Deduction
-		want      TaxResult
-	}{
 		{
 			name: "EXP03: income=500,000 donation=200,000; expect tax=19,000",
 			info: TaxInformation{
 				TotalIncome: 500_000.0,
+				WHT:         0.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
@@ -320,7 +347,7 @@ func TestCalculateTax_FromIncomeAndWhtAndAllowance_ExpectSuccess(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_FromInvalidTaxInformation_ExpectError(t *testing.T) {
+func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 	// Arrange
 	deduction := Deduction{
 		Personal: 60_000.0,
@@ -389,7 +416,7 @@ func TestCalculateTax_FromInvalidTaxInformation_ExpectError(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_FromInvalidDeduction_ExpectError(t *testing.T) {
+func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 	t.Run("personal deduction > max", func(t *testing.T) {
 		// Arrange
 		invalidDeduction := Deduction{
