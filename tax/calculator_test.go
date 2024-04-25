@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestCalculateNetIncome_ExpectPositiveValue(t *testing.T) {
+func TestCalculateNetIncome(t *testing.T) {
 	// Arrange
 	testcases := []struct {
 		name              string
@@ -171,133 +171,122 @@ func TestCalculateTax_Success(t *testing.T) {
 	}
 	testcases := []struct {
 		name      string
-		info      TaxInformation
-		deduction Deduction
-		want      TaxResult
+		taxInfo   TaxInformation
+		taxResult TaxResult
 	}{
 		{
 			name: "EXP01: only income, net-income=290,000 (rate=10%); expect tax=29,000",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         0.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 29_000.0},
+			taxResult: TaxResult{Tax: 29_000.0},
 		},
 		{
 			name: "only income, net-income=150,000 (rate=0%); expect tax=0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 210_000.0,
 				WHT:         0.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0},
+			taxResult: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "only income, net-income=0 (rate=0%); expect tax=0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 60_000.0,
 				WHT:         0.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0},
+			taxResult: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "EXP02: tax-payable>wht; expect tax=4,000",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         25_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 4_000.0},
+			taxResult: TaxResult{Tax: 4_000.0},
 		},
 		{
 			name: "tax-payable=wht; expect tax=0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         29_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0},
+			taxResult: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "tax-payable<wht; expect taxRefund=10,000",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         39_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "EXP03: income=500,000 donation=200,000; expect tax=19,000",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         0.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 19_000.0},
+			taxResult: TaxResult{Tax: 19_000.0},
 		},
 		{
 			name: "income=500,000 wht=tax-payable donation=200,000; expect tax=0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         19_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0},
+			taxResult: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "income=500,000 wht>tax-payable donation=200,000; expect taxRefund=10,000",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         29_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "netIncome=0: income=200,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 200_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 100_000.0},
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0},
+			taxResult: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "netIncome=0: income=200,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 200_000.0,
 				WHT:         10_000.0,
 				Allowances: []Allowance{
@@ -305,24 +294,22 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "netIncome<0: income=150,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 150_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 100_000.0},
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0},
+			taxResult: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "netIncome<0: income=150,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 150_000.0,
 				WHT:         10_000.0,
 				Allowances: []Allowance{
@@ -330,19 +317,18 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			got, err := CalculateTax(tc.info, tc.deduction)
+			got, err := CalculateTax(tc.taxInfo, deduction)
 
 			// Assert
 			assert.NoError(t, err)
-			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.taxResult, got)
 		})
 	}
 }
