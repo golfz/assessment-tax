@@ -377,6 +377,10 @@ func TestCalculateTax_Success(t *testing.T) {
 	}
 }
 
+func TestCalculateTax_TaxLevel(t *testing.T) {
+	t.Errorf("not implemented")
+}
+
 func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 	// Arrange
 	deduction := Deduction{
