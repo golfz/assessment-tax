@@ -69,7 +69,7 @@ func setup(method, url string, body interface{}) (*httptest.ResponseRecorder, ec
 	return rec, c, h, mock
 }
 
-func TestCalculateTax_Success(t *testing.T) {
+func TestCalculateTaxHandler_FromIncome_Expect200WithTax(t *testing.T) {
 	t.Run("income=500,000 expect 200 OK with tax=29,000", func(t *testing.T) {
 		// Arrange
 		info := TaxInformation{
@@ -104,7 +104,76 @@ func TestCalculateTax_Success(t *testing.T) {
 	})
 }
 
-func TestCalculateTax_Error(t *testing.T) {
+func TestCalculateTaxHandler_FromIncomeAndWHT_Expect200WithTaxAndTaxRefund(t *testing.T) {
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+	info := TaxInformation{
+		Allowances: []Allowance{
+			{Type: AllowanceTypeDonation, Amount: 0.0},
+		},
+	}
+
+	testcases := []struct {
+		name       string
+		Income     float64
+		WHT        float64
+		wantTax    float64
+		wantRefund float64
+	}{
+		{
+			name:       "tax > WHT; expect 200 OK with tax>0",
+			Income:     500_000.0,
+			WHT:        25_000.0,
+			wantTax:    4_000.0,
+			wantRefund: 0.0,
+		},
+		{
+			name:       "tax = WHT; expect 200 OK with tax=0",
+			Income:     500_000.0,
+			WHT:        29_000.0,
+			wantTax:    0.0,
+			wantRefund: 0.0,
+		},
+		{
+			name:       "tax < WHT; expect 200 OK with tax=0, taxRefund>0",
+			Income:     500_000.0,
+			WHT:        39_000.0,
+			wantTax:    0.0,
+			wantRefund: 10_000.0,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			info.TotalIncome = tc.Income
+			info.WHT = tc.WHT
+			resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
+			mock.err = nil
+			mock.deduction = deduction
+			mock.ExpectToCall(MethodGetDeduction)
+
+			// Act
+			err := h.CalculateTaxHandler(c)
+
+			// Assert
+			mock.Verify(t)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, resp.Code)
+			var got TaxResult
+			if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+			}
+			assert.Equal(t, tc.wantTax, got.Tax)
+			assert.Equal(t, tc.wantRefund, got.TaxRefund)
+		})
+	}
+}
+
+func TestCalculateTaxHandler_Error(t *testing.T) {
 	t.Run("no content-type expect 400 with error message", func(t *testing.T) {
 		// Arrange
 		body := struct{ Field string }{Field: "invalid"}

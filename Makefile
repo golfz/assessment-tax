@@ -4,6 +4,9 @@ quality:
 	golangci-lint run
 
 test-unit:
+	go test ./... -tags=unit
+
+test-unit-v:
 	go test -v ./... -tags=unit
 
 test-cover:
