@@ -7,284 +7,469 @@
 	},
 	"item": [
 		{
-			"name": "EXP1: calculate-tax (success)",
-			"event": [
+			"name": "calculations",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"expect status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"pm.test(\"expect tax is 29000\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.tax).to.eql(29000);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "EXP1: calculate-tax (success)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 29000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(29000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/tax/calculations",
-					"host": [
-						"{{url}}"
 					],
-					"path": [
-						"tax",
-						"calculations"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "EXP1: calculate-tax (income<0, code 400)",
-			"event": [
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"expect status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
-							"});\r",
-							"\r",
-							"pm.test('expect json has message', function() {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('message')\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disabledSystemHeaders": {}
-			},
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"totalIncome\": -500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "EXP1: calculate-tax (income<0, code 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test('expect json has message', function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property('message')\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/tax/calculations",
-					"host": [
-						"{{url}}"
 					],
-					"path": [
-						"tax",
-						"calculations"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "EXP1: calculate-tax (no content-type, code 400)",
-			"event": [
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": -500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"expect status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
-							"});\r",
-							"\r",
-							"pm.test('expect json has message', function() {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('message')\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disabledSystemHeaders": {
-					"content-type": true
-				}
-			},
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "EXP1: calculate-tax (no content-type, code 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test('expect json has message', function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property('message')\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/tax/calculations",
-					"host": [
-						"{{url}}"
 					],
-					"path": [
-						"tax",
-						"calculations"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "EXP2: calculate-tax (tax > 0)",
-			"event": [
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"expect status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"pm.test(\"expect tax is 4000\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.tax).to.eql(4000);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 25000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "EXP2: calculate-tax (tax > 0)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 4000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(4000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/tax/calculations",
-					"host": [
-						"{{url}}"
 					],
-					"path": [
-						"tax",
-						"calculations"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "EXP2: calculate-tax (tax = 0)",
-			"event": [
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 25000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"expect status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"pm.test(\"expect tax is 4000\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.tax).to.eql(0);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 29000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "EXP2: calculate-tax (tax = 0)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 4000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(0);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/tax/calculations",
-					"host": [
-						"{{url}}"
 					],
-					"path": [
-						"tax",
-						"calculations"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "EXP2: calculate-tax (tax = 0, taxRefund > 0)",
-			"event": [
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 29000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"expect status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"pm.test(\"expect tax is 4000\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.taxRefund).to.eql(10000);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 39000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "EXP2: calculate-tax (tax = 0, taxRefund > 0)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 4000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxRefund).to.eql(10000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/tax/calculations",
-					"host": [
-						"{{url}}"
 					],
-					"path": [
-						"tax",
-						"calculations"
-					]
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 39000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 0.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EXP3: calculate with allowance (expect tax)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 19000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(19000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 200000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Multi Allowance, tax payable > WHT (expect tax)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 9000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(9000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 600000.0,\r\n    \"wht\": 15000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 40000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 30000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 80000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 70000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Multi Allowance, tax payable = WHT (expect tax=0)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 0\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(0);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 600000.0,\r\n    \"wht\": 24000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 40000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 30000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 80000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 70000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Multi Allowance, tax payable < WHT (expect taxRefund)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 10000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxRefund).to.eql(10000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 600000.0,\r\n    \"wht\": 34000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 40000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 30000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 80000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 70000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		}
 	]
 }

@@ -258,14 +258,14 @@ func TestCalculateTaxHandler_Error(t *testing.T) {
 
 	t.Run("GetDeduction() error expect 500 with error message", func(t *testing.T) {
 		// Arrange
-		info := TaxInformation{
+		taxInfo := TaxInformation{
 			TotalIncome: 500_000.0,
 			WHT:         0.0,
 			Allowances: []Allowance{
 				{Type: AllowanceTypeDonation, Amount: 0.0},
 			},
 		}
-		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
+		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", taxInfo)
 		mock.err = errors.New("error getting deduction")
 		mock.ExpectToCall(MethodGetDeduction)
 
@@ -285,14 +285,14 @@ func TestCalculateTaxHandler_Error(t *testing.T) {
 
 	t.Run("invalid deduction expect 500 with error message", func(t *testing.T) {
 		// Arrange
-		info := TaxInformation{
+		taxInfo := TaxInformation{
 			TotalIncome: 500_000.0,
 			WHT:         0.0,
 			Allowances: []Allowance{
 				{Type: AllowanceTypeDonation, Amount: 0.0},
 			},
 		}
-		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
+		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", taxInfo)
 		mock.deduction = Deduction{}
 		mock.ExpectToCall(MethodGetDeduction)
 
@@ -312,14 +312,14 @@ func TestCalculateTaxHandler_Error(t *testing.T) {
 
 	t.Run("invalid total income expect 400 with error message", func(t *testing.T) {
 		// Arrange
-		info := TaxInformation{
+		taxInfo := TaxInformation{
 			TotalIncome: -1,
 			WHT:         0.0,
 			Allowances: []Allowance{
 				{Type: AllowanceTypeDonation, Amount: 0.0},
 			},
 		}
-		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", info)
+		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", taxInfo)
 
 		// Act
 		err := h.CalculateTaxHandler(c)
@@ -336,14 +336,14 @@ func TestCalculateTaxHandler_Error(t *testing.T) {
 
 	t.Run("invalid allowance amount expect 400 with error message", func(t *testing.T) {
 		// Arrange
-		info := TaxInformation{
+		taxInfo := TaxInformation{
 			TotalIncome: 100_000.0,
 			WHT:         0.0,
 			Allowances: []Allowance{
 				{Type: AllowanceTypeDonation, Amount: -10.0},
 			},
 		}
-		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", info)
+		resp, c, h, _ := setup(http.MethodPost, "/tax/calculations", taxInfo)
 
 		// Act
 		err := h.CalculateTaxHandler(c)
