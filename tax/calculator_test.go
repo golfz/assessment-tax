@@ -7,6 +7,56 @@ import (
 	"testing"
 )
 
+func TestCalculateNetIncome_ExpectPositiveValue(t *testing.T) {
+	// Arrange
+	testcases := []struct {
+		name              string
+		totalIncome       float64
+		personalDeduction float64
+		totalAllowance    float64
+		want              float64
+	}{
+		{
+			name:              "income=100,000 personal=60,000 allowance=0; expect net=40,000",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    0.0,
+			want:              40_000.0,
+		},
+		{
+			name:              "income=100,000 personal=60,000 allowance=10,000; expect net=30,000",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    10_000.0,
+			want:              30_000.0,
+		},
+		{
+			name:              "income=100,000 personal=60,000 allowance=40,000; expect net=0",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    40_000.0,
+			want:              0.0,
+		},
+		{
+			name:              "income=100,000 personal=60,000 allowance=100,000; expect net=0",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    100_000.0,
+			want:              0.0,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			got := calculateNetIncome(tc.totalIncome, tc.personalDeduction, tc.totalAllowance)
+
+			// Assert
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
 func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 	// Arrange
 	defaultDeduction := Deduction{
@@ -155,6 +205,118 @@ func TestCalculateTax_FromIncomeAndWHT_ExpectSuccess(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		})
 
+	}
+}
+
+func TestCalculateTax_FromIncomeAndWhtAndAllowance_ExpectSuccess(t *testing.T) {
+	// Arrange
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+	testcases := []struct {
+		name      string
+		info      TaxInformation
+		deduction Deduction
+		want      TaxResult
+	}{
+		{
+			name: "EXP03: income=500,000 donation=200,000; expect tax=19,000",
+			info: TaxInformation{
+				TotalIncome: 500_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200_000.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 19_000.0},
+		},
+		{
+			name: "income=500,000 wht=tax donation=200,000; expect tax=0",
+			info: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         19_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200_000.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0},
+		},
+		{
+			name: "income=500,000 wht>tax donation=200,000; expect taxRefund=10,000",
+			info: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         29_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200_000.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+		{
+			name: "netIncome=0: income=200,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
+			info: TaxInformation{
+				TotalIncome: 200_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0},
+		},
+		{
+			name: "netIncome=0: income=200,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
+			info: TaxInformation{
+				TotalIncome: 200_000.0,
+				WHT:         10_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+		{
+			name: "netIncome<0: income=150,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
+			info: TaxInformation{
+				TotalIncome: 150_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0},
+		},
+		{
+			name: "netIncome<0: income=150,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
+			info: TaxInformation{
+				TotalIncome: 150_000.0,
+				WHT:         10_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			deduction: deduction,
+			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			got, err := CalculateTax(tc.info, tc.deduction)
+
+			// Assert
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, got)
+		})
 	}
 }
 

@@ -29,6 +29,14 @@ func calculateTaxForRate(r rate, netIncome float64) float64 {
 	return taxableIncome * (r.percentage / 100.0)
 }
 
+func calculateNetIncome(totalIncome, personalDeduction, totalAllowance float64) float64 {
+	result := totalIncome - personalDeduction - totalAllowance
+	if result < 0 {
+		return 0
+	}
+	return result
+}
+
 func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 	err := validateTaxInformation(info)
 	if err != nil {
@@ -42,11 +50,11 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 		return TaxResult{}, err
 	}
 
-	netIncome := info.TotalIncome - deduction.Personal
+	totalAllowance := getTotalAllowance(info.Allowances, deduction)
 
-	// Calculate tax
+	netIncome := calculateNetIncome(info.TotalIncome, deduction.Personal, totalAllowance)
+
 	tax := 0.0
-
 	for _, r := range rates {
 		tax += calculateTaxForRate(r, netIncome)
 	}
