@@ -36,7 +36,8 @@ type Deduction struct {
 }
 
 type rate struct {
-	lowerBound float64
-	upperBound float64
-	percentage float64
+	lowerBound  float64
+	upperBound  float64
+	percentage  float64
+	description string
 }

@@ -6,11 +6,11 @@ import (
 )
 
 var rates = []rate{
-	{lowerBound: 0, upperBound: 150_000, percentage: 0},
-	{lowerBound: 150_000, upperBound: 500_000, percentage: 10},
-	{lowerBound: 500_000, upperBound: 1_000_000, percentage: 15},
-	{lowerBound: 1_000_000, upperBound: 2_000_000, percentage: 20},
-	{lowerBound: 2_000_000, upperBound: math.MaxFloat64, percentage: 35},
+	{lowerBound: 0, upperBound: 150_000, percentage: 0, description: "0-150,000"},
+	{lowerBound: 150_000, upperBound: 500_000, percentage: 10, description: "150,001-500,000"},
+	{lowerBound: 500_000, upperBound: 1_000_000, percentage: 15, description: "500,001-1,000,000"},
+	{lowerBound: 1_000_000, upperBound: 2_000_000, percentage: 20, description: "1,000,001-2,000,000"},
+	{lowerBound: 2_000_000, upperBound: math.MaxFloat64, percentage: 35, description: "2,000,001 ขึ้นไป"},
 }
 
 func calculateTaxableIncome(netIncome, lowerBound, upperBound float64) float64 {
@@ -54,20 +54,25 @@ func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
 
 	netIncome := calculateNetIncome(info.TotalIncome, deduction.Personal, totalAllowance)
 
-	tax := 0.0
+	taxResult := TaxResult{
+		Tax:       0.0,
+		TaxRefund: 0.0,
+		TaxLevels: make([]TaxLevel, 0),
+	}
 	for _, r := range rates {
-		tax += calculateTaxForRate(r, netIncome)
+		tax := calculateTaxForRate(r, netIncome)
+		taxResult.Tax += tax
+		taxResult.TaxLevels = append(taxResult.TaxLevels, TaxLevel{
+			Level: r.description,
+			Tax:   tax,
+		})
 	}
 
-	tax -= info.WHT
-	taxRefund := 0.0
-	if tax < 0 {
-		taxRefund = -tax
-		tax = 0
+	taxResult.Tax -= info.WHT
+	if taxResult.Tax < 0 {
+		taxResult.TaxRefund = -taxResult.Tax
+		taxResult.Tax = 0.0
 	}
 
-	return TaxResult{
-		Tax:       tax,
-		TaxRefund: taxRefund,
-	}, nil
+	return taxResult, nil
 }

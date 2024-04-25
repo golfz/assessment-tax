@@ -157,7 +157,8 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 
 			// Assert
 			assert.NoError(t, err)
-			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.want.Tax, got.Tax)
+			assert.Equal(t, tc.want.TaxRefund, got.TaxRefund)
 		})
 	}
 }
@@ -370,7 +371,8 @@ func TestCalculateTax_Success(t *testing.T) {
 
 			// Assert
 			assert.NoError(t, err)
-			assert.Equal(t, tc.taxResult, got)
+			assert.Equal(t, tc.taxResult.Tax, got.Tax)
+			assert.Equal(t, tc.taxResult.TaxRefund, got.TaxRefund)
 		})
 	}
 }
