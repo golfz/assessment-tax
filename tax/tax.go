@@ -19,7 +19,7 @@ type TaxInformation struct {
 }
 
 type TaxResult struct {
-	Tax       float64 `json:"tax,omitempty"`
+	Tax       float64 `json:"tax"`
 	TaxRefund float64 `json:"taxRefund,omitempty"`
 }
 
