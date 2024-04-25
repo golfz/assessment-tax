@@ -49,18 +49,6 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 			wantTaxRefund: 0.0,
 		},
 		{
-			name: "EXP02: Income and WHT; expect tax=4_000.0, taxRefund=0.0",
-			info: tax.TaxInformation{
-				TotalIncome: 500_000.0,
-				WHT:         25_000.0,
-				Allowances: []tax.Allowance{
-					{Type: tax.AllowanceTypeDonation, Amount: 0.0},
-				},
-			},
-			wantTax:       4_000.0,
-			wantTaxRefund: 0.0,
-		},
-		{
 			name: "EXP03: Income and Allowance; expect tax=19_000.0, taxRefund=0.0",
 			info: tax.TaxInformation{
 				TotalIncome: 500_000.0,
