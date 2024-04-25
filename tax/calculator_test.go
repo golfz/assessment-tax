@@ -212,7 +212,7 @@ func TestCalculateTax_Success(t *testing.T) {
 			want:      TaxResult{Tax: 0.0},
 		},
 		{
-			name: "EXP02: tax>wht; expect tax=4,000",
+			name: "EXP02: tax-payable>wht; expect tax=4,000",
 			info: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         25_000.0,
@@ -224,7 +224,7 @@ func TestCalculateTax_Success(t *testing.T) {
 			want:      TaxResult{Tax: 4_000.0},
 		},
 		{
-			name: "tax=wht; expect tax=0",
+			name: "tax-payable=wht; expect tax=0",
 			info: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         29_000.0,
@@ -236,7 +236,7 @@ func TestCalculateTax_Success(t *testing.T) {
 			want:      TaxResult{Tax: 0.0},
 		},
 		{
-			name: "tax<wht; expect taxRefund=10,000",
+			name: "tax-payable<wht; expect taxRefund=10,000",
 			info: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         39_000.0,
@@ -260,7 +260,7 @@ func TestCalculateTax_Success(t *testing.T) {
 			want:      TaxResult{Tax: 19_000.0},
 		},
 		{
-			name: "income=500,000 wht=tax donation=200,000; expect tax=0",
+			name: "income=500,000 wht=tax-payable donation=200,000; expect tax=0",
 			info: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         19_000.0,
@@ -272,7 +272,7 @@ func TestCalculateTax_Success(t *testing.T) {
 			want:      TaxResult{Tax: 0.0},
 		},
 		{
-			name: "income=500,000 wht>tax donation=200,000; expect taxRefund=10,000",
+			name: "income=500,000 wht>tax-payable donation=200,000; expect taxRefund=10,000",
 			info: TaxInformation{
 				TotalIncome: 500_000.0,
 				WHT:         29_000.0,
