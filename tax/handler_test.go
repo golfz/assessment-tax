@@ -69,111 +69,7 @@ func setup(method, url string, body interface{}) (*httptest.ResponseRecorder, ec
 	return rec, c, h, mock
 }
 
-func TestCalculateTaxHandler_FromIncome_Expect200WithTax(t *testing.T) {
-	t.Run("income=500,000 expect 200 OK with tax=29,000", func(t *testing.T) {
-		// Arrange
-		info := TaxInformation{
-			TotalIncome: 500_000.0,
-			WHT:         0.0,
-			Allowances: []Allowance{
-				{Type: AllowanceTypeDonation, Amount: 0.0},
-			},
-		}
-		wantTax := 29_000.0
-		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
-		mock.err = nil
-		mock.deduction = Deduction{
-			Personal: 60_000.0,
-			KReceipt: 50_000.0,
-			Donation: 100_000.0,
-		}
-		mock.ExpectToCall(MethodGetDeduction)
-
-		// Act
-		err := h.CalculateTaxHandler(c)
-
-		// Assert
-		mock.Verify(t)
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.Code)
-		var got TaxResult
-		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
-			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
-		}
-		assert.Equal(t, wantTax, got.Tax)
-	})
-}
-
-func TestCalculateTaxHandler_FromIncomeAndWHT_Expect200WithTaxAndTaxRefund(t *testing.T) {
-	deduction := Deduction{
-		Personal: 60_000.0,
-		KReceipt: 50_000.0,
-		Donation: 100_000.0,
-	}
-	info := TaxInformation{
-		Allowances: []Allowance{
-			{Type: AllowanceTypeDonation, Amount: 0.0},
-		},
-	}
-
-	testcases := []struct {
-		name       string
-		Income     float64
-		WHT        float64
-		wantTax    float64
-		wantRefund float64
-	}{
-		{
-			name:       "tax > WHT; expect 200 OK with tax>0",
-			Income:     500_000.0,
-			WHT:        25_000.0,
-			wantTax:    4_000.0,
-			wantRefund: 0.0,
-		},
-		{
-			name:       "tax = WHT; expect 200 OK with tax=0",
-			Income:     500_000.0,
-			WHT:        29_000.0,
-			wantTax:    0.0,
-			wantRefund: 0.0,
-		},
-		{
-			name:       "tax < WHT; expect 200 OK with tax=0, taxRefund>0",
-			Income:     500_000.0,
-			WHT:        39_000.0,
-			wantTax:    0.0,
-			wantRefund: 10_000.0,
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Arrange
-			info.TotalIncome = tc.Income
-			info.WHT = tc.WHT
-			resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", info)
-			mock.err = nil
-			mock.deduction = deduction
-			mock.ExpectToCall(MethodGetDeduction)
-
-			// Act
-			err := h.CalculateTaxHandler(c)
-
-			// Assert
-			mock.Verify(t)
-			assert.NoError(t, err)
-			assert.Equal(t, http.StatusOK, resp.Code)
-			var got TaxResult
-			if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
-				t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
-			}
-			assert.Equal(t, tc.wantTax, got.Tax)
-			assert.Equal(t, tc.wantRefund, got.TaxRefund)
-		})
-	}
-}
-
-func TestCalculateTaxHandler_WithIncomeAndWhtAndAllowances_Expect200WithTaxAndTaxRefund(t *testing.T) {
+func TestCalculateTaxHandler_Success(t *testing.T) {
 	deduction := Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
@@ -186,6 +82,54 @@ func TestCalculateTaxHandler_WithIncomeAndWhtAndAllowances_Expect200WithTaxAndTa
 		wantTax    float64
 		wantRefund float64
 	}{
+		{
+			name: "EXP01: expect 200 OK with tax",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			wantTax:    29_000.0,
+			wantRefund: 0.0,
+		},
+		{
+			name: "EXP02: tax > WHT; expect 200 OK with tax>0",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         25_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			wantTax:    4_000.0,
+			wantRefund: 0.0,
+		},
+		{
+			name: "tax = WHT; expect 200 OK with tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         29_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			wantTax:    0.0,
+			wantRefund: 0.0,
+		},
+		{
+			name: "tax < WHT; expect 200 OK with tax=0, taxRefund>0",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         39_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			wantTax:    0.0,
+			wantRefund: 10_000.0,
+		},
 		{
 			name: "EXP03: income=500,000 donation=200,000; expect tax=19,000",
 			taxInfo: TaxInformation{
