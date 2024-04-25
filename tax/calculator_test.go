@@ -319,6 +319,48 @@ func TestCalculateTax_Success(t *testing.T) {
 			},
 			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
+		{
+			name: "Multi Allowance, tax payable > WHT; expect tax",
+			taxInfo: TaxInformation{
+				TotalIncome: 600_000.0,
+				WHT:         15_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
+					{Type: AllowanceTypeDonation, Amount: 80_000.0},
+					{Type: AllowanceTypeDonation, Amount: 70_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
+		},
+		{
+			name: "Multi Allowance, tax payable = WHT; expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 600_000.0,
+				WHT:         24_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
+					{Type: AllowanceTypeDonation, Amount: 80_000.0},
+					{Type: AllowanceTypeDonation, Amount: 70_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
+		},
+		{
+			name: "Multi Allowance, tax payable < WHT; expect taxRefund>0",
+			taxInfo: TaxInformation{
+				TotalIncome: 600_000.0,
+				WHT:         34_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
+					{Type: AllowanceTypeDonation, Amount: 80_000.0},
+					{Type: AllowanceTypeDonation, Amount: 70_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
 	}
 
 	for _, tc := range testcases {
