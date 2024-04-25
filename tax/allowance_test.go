@@ -156,3 +156,98 @@ func TestGetTaxableAllowance_WithAllowanceEqualDeduction_ExpectSameAllowance(t *
 		AllowanceTypeKReceipt: 50_000.0,
 	}, result)
 }
+
+func TestGetTotalAllowance_WithEmptyAllowance_ExpectZero(t *testing.T) {
+	// Arrange
+	allowances := []Allowance{}
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	// Act
+	result := getTotalAllowance(allowances, deduction)
+
+	// Assert
+	assert.Equal(t, 0.0, result)
+}
+
+func TestGetTotalAllowance_WithSingleAllowance_ExpectSameAllowance(t *testing.T) {
+	// Arrange
+	allowances := []Allowance{
+		{Type: AllowanceTypeDonation, Amount: 80_000.0},
+	}
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	// Act
+	result := getTotalAllowance(allowances, deduction)
+
+	// Assert
+	assert.Equal(t, 80_000.0, result)
+}
+
+func TestGetTotalAllowance_WithMultipleAllowance_ExpectTotalAllowance(t *testing.T) {
+	// Arrange
+	allowances := []Allowance{
+		{Type: AllowanceTypeDonation, Amount: 30_000.0},
+		{Type: AllowanceTypeDonation, Amount: 40_000.0},
+		{Type: AllowanceTypeKReceipt, Amount: 50_000.0},
+	}
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	// Act
+	result := getTotalAllowance(allowances, deduction)
+
+	// Assert
+	assert.Equal(t, 120_000.0, result)
+}
+
+func TestGetTotalAllowance_WithAllowanceMoreThanDeduction_ExpectTotalDeduction(t *testing.T) {
+	// Arrange
+	allowances := []Allowance{
+		{Type: AllowanceTypeDonation, Amount: 130_000.0},
+		{Type: AllowanceTypeDonation, Amount: 70_000.0},
+		{Type: AllowanceTypeKReceipt, Amount: 200_000.0},
+	}
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	// Act
+	result := getTotalAllowance(allowances, deduction)
+
+	// Assert
+	assert.Equal(t, 150_000.0, result)
+}
+
+func TestGetTotalAllowance_WithAllowanceEqualDeduction_ExpectTotalAllowance(t *testing.T) {
+	// Arrange
+	allowances := []Allowance{
+		{Type: AllowanceTypeDonation, Amount: 40_000.0},
+		{Type: AllowanceTypeDonation, Amount: 60_000.0},
+		{Type: AllowanceTypeKReceipt, Amount: 20_000.0},
+		{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
+	}
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	// Act
+	result := getTotalAllowance(allowances, deduction)
+
+	// Assert
+	assert.Equal(t, 150_000.0, result)
+}

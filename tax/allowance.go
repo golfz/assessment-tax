@@ -23,3 +23,12 @@ func getTaxableAllowance(allowances []Allowance, deduction Deduction) map[Allowa
 	}
 	return result
 }
+
+func getTotalAllowance(allowances []Allowance, deduction Deduction) float64 {
+	taxableAllowances := getTaxableAllowance(allowances, deduction)
+	total := 0.0
+	for _, aAmount := range taxableAllowances {
+		total += aAmount
+	}
+	return total
+}
