@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestCalculateTax_Success_InputOnlyTotalIncome(t *testing.T) {
+func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 	// Arrange
 	defaultDeduction := Deduction{
 		Personal: 60_000.0,
@@ -112,7 +112,7 @@ func TestCalculateTax_Success_InputOnlyTotalIncome(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_Success_from_TotalIncome_and_WHT(t *testing.T) {
+func TestCalculateTax_FromIncomeAndWHT_ExpectSuccess(t *testing.T) {
 	// Arrange
 	deduction := Deduction{
 		Personal: 60_000.0,
@@ -158,7 +158,7 @@ func TestCalculateTax_Success_from_TotalIncome_and_WHT(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_Error_InvalidTaxInformation(t *testing.T) {
+func TestCalculateTax_FromInvalidTaxInformation_ExpectError(t *testing.T) {
 	deduction := Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
@@ -237,7 +237,7 @@ func TestCalculateTax_Error_InvalidTaxInformation(t *testing.T) {
 	})
 }
 
-func TestCalculateTax_Error_InvalidDeduction(t *testing.T) {
+func TestCalculateTax_FromInvalidDeduction_ExpectError(t *testing.T) {
 	t.Run("personal deduction > max", func(t *testing.T) {
 		// Arrange
 		invalidDeduction := Deduction{
