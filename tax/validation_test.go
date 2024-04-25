@@ -10,32 +10,32 @@ import (
 func TestValidateTaxInformation_Success(t *testing.T) {
 	// Arrange
 	testcases := []struct {
-		name string
-		info TaxInformation
+		name    string
+		taxInfo TaxInformation
 	}{
 		{
-			name: "total income = 0",
-			info: TaxInformation{TotalIncome: 0.0},
+			name:    "total income = 0",
+			taxInfo: TaxInformation{TotalIncome: 0.0},
 		},
 		{
-			name: "total income = 100,000",
-			info: TaxInformation{TotalIncome: 100_000.0},
+			name:    "total income = 100,000",
+			taxInfo: TaxInformation{TotalIncome: 100_000.0},
 		},
 		{
-			name: "WHT = 0",
-			info: TaxInformation{TotalIncome: 100_000.0, WHT: 0.0},
+			name:    "WHT = 0",
+			taxInfo: TaxInformation{TotalIncome: 100_000.0, WHT: 0.0},
 		},
 		{
-			name: "WHT < total income",
-			info: TaxInformation{TotalIncome: 100_000.0, WHT: 10_000.0},
+			name:    "WHT < total income",
+			taxInfo: TaxInformation{TotalIncome: 100_000.0, WHT: 10_000.0},
 		},
 		{
-			name: "WHT = total income",
-			info: TaxInformation{TotalIncome: 100_000.0, WHT: 100_000.0},
+			name:    "WHT = total income",
+			taxInfo: TaxInformation{TotalIncome: 100_000.0, WHT: 100_000.0},
 		},
 		{
 			name: "allowance = 0 or allowance > 0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 100_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: 0.0},
@@ -48,7 +48,7 @@ func TestValidateTaxInformation_Success(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			gotError := validateTaxInformation(tc.info)
+			gotError := validateTaxInformation(tc.taxInfo)
 
 			// Assert
 			assert.NoError(t, gotError)
@@ -59,33 +59,33 @@ func TestValidateTaxInformation_Success(t *testing.T) {
 func TestValidateTaxInformation_Error(t *testing.T) {
 	// Arrange
 	testcases := []struct {
-		name  string
-		info  TaxInformation
-		error []error
+		name    string
+		taxInfo TaxInformation
+		error   []error
 	}{
 		{
-			name:  "total income < 0",
-			info:  TaxInformation{TotalIncome: -1.0},
-			error: []error{ErrInvalidTotalIncome},
+			name:    "total income < 0",
+			taxInfo: TaxInformation{TotalIncome: -1.0},
+			error:   []error{ErrInvalidTotalIncome},
 		},
 		{
-			name:  "WHT < 0",
-			info:  TaxInformation{TotalIncome: 100_000.0, WHT: -1.0},
-			error: []error{ErrInvalidWHT},
+			name:    "WHT < 0",
+			taxInfo: TaxInformation{TotalIncome: 100_000.0, WHT: -1.0},
+			error:   []error{ErrInvalidWHT},
 		},
 		{
-			name:  "WHT > income",
-			info:  TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0},
-			error: []error{ErrInvalidWHT},
+			name:    "WHT > income",
+			taxInfo: TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0},
+			error:   []error{ErrInvalidWHT},
 		},
 		{
-			name:  "total income < 0 and WHT < 0",
-			info:  TaxInformation{TotalIncome: -1.0, WHT: -1.0},
-			error: []error{ErrInvalidTotalIncome, ErrInvalidWHT},
+			name:    "total income < 0 and WHT < 0",
+			taxInfo: TaxInformation{TotalIncome: -1.0, WHT: -1.0},
+			error:   []error{ErrInvalidTotalIncome, ErrInvalidWHT},
 		},
 		{
 			name: "some allowance < 0",
-			info: TaxInformation{
+			taxInfo: TaxInformation{
 				TotalIncome: 100_000.0,
 				Allowances: []Allowance{
 					{Type: AllowanceTypeDonation, Amount: -1.0},
@@ -100,7 +100,7 @@ func TestValidateTaxInformation_Error(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			gotError := validateTaxInformation(tc.info)
+			gotError := validateTaxInformation(tc.taxInfo)
 
 			// Assert
 			assert.Error(t, gotError)

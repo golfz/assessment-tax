@@ -7,6 +7,56 @@ import (
 	"testing"
 )
 
+func TestCalculateNetIncome(t *testing.T) {
+	// Arrange
+	testcases := []struct {
+		name              string
+		totalIncome       float64
+		personalDeduction float64
+		totalAllowance    float64
+		want              float64
+	}{
+		{
+			name:              "income=100,000 personal=60,000 allowance=0; expect net=40,000",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    0.0,
+			want:              40_000.0,
+		},
+		{
+			name:              "income=100,000 personal=60,000 allowance=10,000; expect net=30,000",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    10_000.0,
+			want:              30_000.0,
+		},
+		{
+			name:              "income=100,000 personal=60,000 allowance=40,000; expect net=0",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    40_000.0,
+			want:              0.0,
+		},
+		{
+			name:              "income=100,000 personal=60,000 allowance=100,000; expect net=0",
+			totalIncome:       100_000.0,
+			personalDeduction: 60_000.0,
+			totalAllowance:    100_000.0,
+			want:              0.0,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			got := calculateNetIncome(tc.totalIncome, tc.personalDeduction, tc.totalAllowance)
+
+			// Assert
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
 func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 	// Arrange
 	defaultDeduction := Deduction{
@@ -112,7 +162,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_FromIncomeAndWHT_ExpectSuccess(t *testing.T) {
+func TestCalculateTax_Success(t *testing.T) {
 	// Arrange
 	deduction := Deduction{
 		Personal: 60_000.0,
@@ -121,44 +171,211 @@ func TestCalculateTax_FromIncomeAndWHT_ExpectSuccess(t *testing.T) {
 	}
 	testcases := []struct {
 		name      string
-		info      TaxInformation
-		deduction Deduction
-		want      TaxResult
+		taxInfo   TaxInformation
+		taxResult TaxResult
 	}{
 		{
-			name:      "tax > WHT; expect tax>0",
-			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 25_000.0},
-			deduction: deduction,
-			want:      TaxResult{Tax: 4000.0, TaxRefund: 0.0},
+			name: "EXP01: only income, net-income=290,000 (rate=10%); expect tax=29,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 29_000.0},
 		},
 		{
-			name:      "tax = WHT; expect tax=0",
-			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 29_000.0},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			name: "only income, net-income=150,000 (rate=0%); expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 210_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0},
 		},
 		{
-			name:      "tax < WHT; expect taxRefund>0",
-			info:      TaxInformation{TotalIncome: 500_000.0, WHT: 39_000.0},
-			deduction: deduction,
-			want:      TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			name: "only income, net-income=0 (rate=0%); expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 60_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0},
+		},
+		{
+			name: "EXP02: tax-payable>wht; expect tax=4,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         25_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 4_000.0},
+		},
+		{
+			name: "tax-payable=wht; expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         29_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0},
+		},
+		{
+			name: "tax-payable<wht; expect taxRefund=10,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         39_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+		{
+			name: "EXP03: income=500,000 donation=200,000; expect tax=19,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 19_000.0},
+		},
+		{
+			name: "income=500,000 wht=tax-payable donation=200,000; expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         19_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0},
+		},
+		{
+			name: "income=500,000 wht>tax-payable donation=200,000; expect taxRefund=10,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         29_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+		{
+			name: "netIncome=0: income=200,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 200_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0},
+		},
+		{
+			name: "netIncome=0: income=200,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 200_000.0,
+				WHT:         10_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+		{
+			name: "netIncome<0: income=150,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 150_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0},
+		},
+		{
+			name: "netIncome<0: income=150,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 150_000.0,
+				WHT:         10_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+		},
+		{
+			name: "Multi Allowance, tax payable > WHT; expect tax",
+			taxInfo: TaxInformation{
+				TotalIncome: 600_000.0,
+				WHT:         15_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
+					{Type: AllowanceTypeDonation, Amount: 80_000.0},
+					{Type: AllowanceTypeDonation, Amount: 70_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
+		},
+		{
+			name: "Multi Allowance, tax payable = WHT; expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 600_000.0,
+				WHT:         24_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
+					{Type: AllowanceTypeDonation, Amount: 80_000.0},
+					{Type: AllowanceTypeDonation, Amount: 70_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
+		},
+		{
+			name: "Multi Allowance, tax payable < WHT; expect taxRefund>0",
+			taxInfo: TaxInformation{
+				TotalIncome: 600_000.0,
+				WHT:         34_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
+					{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
+					{Type: AllowanceTypeDonation, Amount: 80_000.0},
+					{Type: AllowanceTypeDonation, Amount: 70_000.0},
+				},
+			},
+			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			got, err := CalculateTax(tc.info, tc.deduction)
+			got, err := CalculateTax(tc.taxInfo, deduction)
 
 			// Assert
 			assert.NoError(t, err)
-			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.taxResult, got)
 		})
-
 	}
 }
 
-func TestCalculateTax_FromInvalidTaxInformation_ExpectError(t *testing.T) {
+func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 	// Arrange
 	deduction := Deduction{
 		Personal: 60_000.0,
@@ -227,7 +444,7 @@ func TestCalculateTax_FromInvalidTaxInformation_ExpectError(t *testing.T) {
 	}
 }
 
-func TestCalculateTax_FromInvalidDeduction_ExpectError(t *testing.T) {
+func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 	t.Run("personal deduction > max", func(t *testing.T) {
 		// Arrange
 		invalidDeduction := Deduction{
