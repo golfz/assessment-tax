@@ -12,17 +12,29 @@ const (
 	defaultDatabaseURL = "postgresql://postgres:postgres@localhost:5432/ktaxes?sslmode=disable"
 )
 
+const (
+	kAdminUsername = "ADMIN_USERNAME"
+	kAdminPassword = "ADMIN_PASSWORD"
+
+	defaultAdminUsername = ""
+	defaultAdminPassword = ""
+)
+
 type ConfigGetter func(string) string
 
 type Config struct {
-	Port        int
-	DatabaseURL string
+	Port          int
+	DatabaseURL   string
+	AdminUsername string
+	AdminPassword string
 }
 
 func NewWith(cfgGetter ConfigGetter) *Config {
 	return &Config{
-		Port:        getInt(cfgGetter, kPort, defaultPort),
-		DatabaseURL: getString(cfgGetter, kDatabaseURL, defaultDatabaseURL),
+		Port:          getInt(cfgGetter, kPort, defaultPort),
+		DatabaseURL:   getString(cfgGetter, kDatabaseURL, defaultDatabaseURL),
+		AdminUsername: getString(cfgGetter, kAdminUsername, defaultAdminUsername),
+		AdminPassword: getString(cfgGetter, kAdminPassword, defaultAdminPassword),
 	}
 }
 

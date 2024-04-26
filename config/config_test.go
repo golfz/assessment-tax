@@ -3,6 +3,7 @@
 package config
 
 import (
+	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
 )
@@ -17,19 +18,19 @@ func TestNewWith_Default(t *testing.T) {
 	got := NewWith(cfgGetter)
 
 	// Assert
-	if got.Port != defaultPort {
-		t.Errorf("want %d, got %d", defaultPort, got.Port)
-	}
-	if got.DatabaseURL != defaultDatabaseURL {
-		t.Errorf("want %s, got %s", defaultDatabaseURL, got.DatabaseURL)
-	}
+	assert.Equal(t, defaultPort, got.Port)
+	assert.Equal(t, defaultDatabaseURL, got.DatabaseURL)
+	assert.Equal(t, defaultAdminUsername, got.AdminUsername)
+	assert.Equal(t, defaultAdminPassword, got.AdminPassword)
 }
 
 func TestNewWith_Custom(t *testing.T) {
 	// Arrange
 	want := Config{
-		Port:        1234,
-		DatabaseURL: "database-url",
+		Port:          1234,
+		DatabaseURL:   "database-url",
+		AdminUsername: "admin",
+		AdminPassword: "password",
 	}
 	cfgGetter := func(key string) string {
 		if key == kPort {
@@ -38,6 +39,12 @@ func TestNewWith_Custom(t *testing.T) {
 		if key == kDatabaseURL {
 			return want.DatabaseURL
 		}
+		if key == kAdminUsername {
+			return want.AdminUsername
+		}
+		if key == kAdminPassword {
+			return want.AdminPassword
+		}
 		return ""
 	}
 
@@ -45,10 +52,8 @@ func TestNewWith_Custom(t *testing.T) {
 	got := NewWith(cfgGetter)
 
 	// Assert
-	if got.Port != want.Port {
-		t.Errorf("want %d, got %d", want.Port, got.Port)
-	}
-	if got.DatabaseURL != want.DatabaseURL {
-		t.Errorf("want %s, got %s", want.DatabaseURL, got.DatabaseURL)
-	}
+	assert.Equal(t, want.Port, got.Port)
+	assert.Equal(t, want.DatabaseURL, got.DatabaseURL)
+	assert.Equal(t, want.AdminUsername, got.AdminUsername)
+	assert.Equal(t, want.AdminPassword, got.AdminPassword)
 }

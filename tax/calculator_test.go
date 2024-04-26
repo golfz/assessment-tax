@@ -3,6 +3,7 @@
 package tax
 
 import (
+	"github.com/golfz/assessment-tax/deduction"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -59,7 +60,7 @@ func TestCalculateNetIncome(t *testing.T) {
 
 func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 	// Arrange
-	defaultDeduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
@@ -67,7 +68,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 	testcases := []struct {
 		name      string
 		info      TaxInformation
-		deduction Deduction
+		deduction deduction.Deduction
 		want      TaxResult
 	}{
 		{
@@ -165,7 +166,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 
 func TestCalculateTax_Success(t *testing.T) {
 	// Arrange
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
@@ -367,7 +368,7 @@ func TestCalculateTax_Success(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			got, err := CalculateTax(tc.taxInfo, deduction)
+			got, err := CalculateTax(tc.taxInfo, defaultDeduction)
 
 			// Assert
 			assert.NoError(t, err)
@@ -379,7 +380,7 @@ func TestCalculateTax_Success(t *testing.T) {
 
 func TestCalculateTax_WithTaxLevel(t *testing.T) {
 	// Arrange
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
@@ -443,7 +444,7 @@ func TestCalculateTax_WithTaxLevel(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			got, err := CalculateTax(tc.taxInfo, deduction)
+			got, err := CalculateTax(tc.taxInfo, defaultDeduction)
 
 			// Assert
 			assert.NoError(t, err)
@@ -458,7 +459,7 @@ func TestCalculateTax_WithTaxLevel(t *testing.T) {
 
 func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 	// Arrange
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
@@ -510,7 +511,7 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			got, err := CalculateTax(tc.taxInformation, deduction)
+			got, err := CalculateTax(tc.taxInformation, defaultDeduction)
 
 			// Assert
 			assert.Error(t, err)
@@ -528,8 +529,8 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 	t.Run("personal deduction > max", func(t *testing.T) {
 		// Arrange
-		invalidDeduction := Deduction{
-			Personal: ConstraintMaxPersonalDeduction + 0.1,
+		invalidDeduction := deduction.Deduction{
+			Personal: deduction.MaxPersonalDeduction + 0.1,
 			KReceipt: 50_000.0,
 			Donation: 100_000.0,
 		}
@@ -540,18 +541,18 @@ func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 		// Assert
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrInvalidDeduction)
-		assert.ErrorIs(t, err, ErrInvalidPersonalDeduction)
-		assert.NotErrorIs(t, err, ErrInvalidKReceiptDeduction)
-		assert.NotErrorIs(t, err, ErrInvalidDonationDeduction)
+		assert.ErrorIs(t, err, deduction.ErrInvalidPersonalDeduction)
+		assert.NotErrorIs(t, err, deduction.ErrInvalidKReceiptDeduction)
+		assert.NotErrorIs(t, err, deduction.ErrInvalidDonationDeduction)
 		assert.Equal(t, TaxResult{}, got)
 	})
 
 	t.Run("KReceipt deduction > max and donation deduction > max", func(t *testing.T) {
 		// Arrange
-		invalidDeduction := Deduction{
+		invalidDeduction := deduction.Deduction{
 			Personal: 60_000.0,
-			KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
-			Donation: ConstraintMaxDonationDeduction + 0.1,
+			KReceipt: deduction.MaxKReceiptDeduction + 0.1,
+			Donation: deduction.MaxDonationDeduction + 0.1,
 		}
 
 		// Act
@@ -560,9 +561,9 @@ func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 		// Assert
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrInvalidDeduction)
-		assert.ErrorIs(t, err, ErrInvalidKReceiptDeduction)
-		assert.ErrorIs(t, err, ErrInvalidDonationDeduction)
-		assert.NotErrorIs(t, err, ErrInvalidPersonalDeduction)
+		assert.ErrorIs(t, err, deduction.ErrInvalidKReceiptDeduction)
+		assert.ErrorIs(t, err, deduction.ErrInvalidDonationDeduction)
+		assert.NotErrorIs(t, err, deduction.ErrInvalidPersonalDeduction)
 		assert.Equal(t, TaxResult{}, got)
 	})
 }

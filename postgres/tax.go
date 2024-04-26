@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"errors"
-	"github.com/golfz/assessment-tax/tax"
+	"github.com/golfz/assessment-tax/deduction"
 )
 
 var (
@@ -10,31 +10,31 @@ var (
 	ErrCannotScanDeduction  = errors.New("unable to scan deduction")
 )
 
-func (p *Postgres) GetDeduction() (tax.Deduction, error) {
+func (p *Postgres) GetDeduction() (deduction.Deduction, error) {
 	selectSql := `SELECT name, amount FROM deductions`
 	rows, err := p.Db.Query(selectSql)
 	if err != nil {
-		return tax.Deduction{}, ErrCannotQueryDeduction
+		return deduction.Deduction{}, ErrCannotQueryDeduction
 	}
 	defer rows.Close()
 
-	var deduction tax.Deduction
+	var deductionData deduction.Deduction
 	for rows.Next() {
 		var name string
 		var amount float64
 		err = rows.Scan(&name, &amount)
 		if err != nil {
-			return tax.Deduction{}, ErrCannotScanDeduction
+			return deduction.Deduction{}, ErrCannotScanDeduction
 		}
 		switch name {
 		case "personal":
-			deduction.Personal = amount
+			deductionData.Personal = amount
 		case "k-receipt":
-			deduction.KReceipt = amount
+			deductionData.KReceipt = amount
 		case "donation":
-			deduction.Donation = amount
+			deductionData.Donation = amount
 		}
 	}
 
-	return deduction, nil
+	return deductionData, nil
 }

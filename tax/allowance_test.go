@@ -3,6 +3,7 @@
 package tax
 
 import (
+	"github.com/golfz/assessment-tax/deduction"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -54,14 +55,14 @@ func TestCollapseAllowance_WithMultipleAllowance_ExpectSummedAllowance(t *testin
 func TestGetTaxableAllowance_WithEmptyAllowance_ExpectEmpty(t *testing.T) {
 	// Arrange
 	allowances := []Allowance{}
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTaxableAllowance(allowances, deduction)
+	result := getTaxableAllowance(allowances, defaultDeduction)
 
 	// Assert
 	assert.Empty(t, result)
@@ -72,14 +73,14 @@ func TestGetTaxableAllowance_WithSingleAllowance_ExpectSameAllowance(t *testing.
 	allowances := []Allowance{
 		{Type: AllowanceTypeDonation, Amount: 80_000.0},
 	}
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTaxableAllowance(allowances, deduction)
+	result := getTaxableAllowance(allowances, defaultDeduction)
 
 	// Assert
 	assert.Equal(t, map[AllowanceType]float64{
@@ -94,14 +95,14 @@ func TestGetTaxableAllowance_WithMultipleAllowance_ExpectTaxableAllowance(t *tes
 		{Type: AllowanceTypeDonation, Amount: 40_000.0},
 		{Type: AllowanceTypeKReceipt, Amount: 50_000.0},
 	}
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTaxableAllowance(allowances, deduction)
+	result := getTaxableAllowance(allowances, defaultDeduction)
 
 	// Assert
 	assert.Equal(t, map[AllowanceType]float64{
@@ -117,19 +118,19 @@ func TestGetTaxableAllowance_WithAllowanceMoreThanDeduction_ExpectSameDeduction(
 		{Type: AllowanceTypeDonation, Amount: 70_000.0},
 		{Type: AllowanceTypeKReceipt, Amount: 200_000.0},
 	}
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTaxableAllowance(allowances, deduction)
+	result := getTaxableAllowance(allowances, defaultDeduction)
 
 	// Assert
 	assert.Equal(t, map[AllowanceType]float64{
-		AllowanceTypeDonation: deduction.Donation,
-		AllowanceTypeKReceipt: deduction.KReceipt,
+		AllowanceTypeDonation: defaultDeduction.Donation,
+		AllowanceTypeKReceipt: defaultDeduction.KReceipt,
 	}, result)
 }
 
@@ -141,14 +142,14 @@ func TestGetTaxableAllowance_WithAllowanceEqualDeduction_ExpectSameAllowance(t *
 		{Type: AllowanceTypeKReceipt, Amount: 20_000.0},
 		{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
 	}
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTaxableAllowance(allowances, deduction)
+	result := getTaxableAllowance(allowances, defaultDeduction)
 
 	// Assert
 	assert.Equal(t, map[AllowanceType]float64{
@@ -160,14 +161,14 @@ func TestGetTaxableAllowance_WithAllowanceEqualDeduction_ExpectSameAllowance(t *
 func TestGetTotalAllowance_WithEmptyAllowance_ExpectZero(t *testing.T) {
 	// Arrange
 	allowances := []Allowance{}
-	deduction := Deduction{
+	deductionData := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTotalAllowance(allowances, deduction)
+	result := getTotalAllowance(allowances, deductionData)
 
 	// Assert
 	assert.Equal(t, 0.0, result)
@@ -178,14 +179,14 @@ func TestGetTotalAllowance_WithSingleAllowance_ExpectSameAllowance(t *testing.T)
 	allowances := []Allowance{
 		{Type: AllowanceTypeDonation, Amount: 80_000.0},
 	}
-	deduction := Deduction{
+	deductionData := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTotalAllowance(allowances, deduction)
+	result := getTotalAllowance(allowances, deductionData)
 
 	// Assert
 	assert.Equal(t, 80_000.0, result)
@@ -198,14 +199,14 @@ func TestGetTotalAllowance_WithMultipleAllowance_ExpectTotalAllowance(t *testing
 		{Type: AllowanceTypeDonation, Amount: 40_000.0},
 		{Type: AllowanceTypeKReceipt, Amount: 50_000.0},
 	}
-	deduction := Deduction{
+	deductionData := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTotalAllowance(allowances, deduction)
+	result := getTotalAllowance(allowances, deductionData)
 
 	// Assert
 	assert.Equal(t, 120_000.0, result)
@@ -218,14 +219,14 @@ func TestGetTotalAllowance_WithAllowanceMoreThanDeduction_ExpectTotalDeduction(t
 		{Type: AllowanceTypeDonation, Amount: 70_000.0},
 		{Type: AllowanceTypeKReceipt, Amount: 200_000.0},
 	}
-	deduction := Deduction{
+	deductionData := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTotalAllowance(allowances, deduction)
+	result := getTotalAllowance(allowances, deductionData)
 
 	// Assert
 	assert.Equal(t, 150_000.0, result)
@@ -239,14 +240,14 @@ func TestGetTotalAllowance_WithAllowanceEqualDeduction_ExpectTotalAllowance(t *t
 		{Type: AllowanceTypeKReceipt, Amount: 20_000.0},
 		{Type: AllowanceTypeKReceipt, Amount: 30_000.0},
 	}
-	deduction := Deduction{
+	deductionData := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
 
 	// Act
-	result := getTotalAllowance(allowances, deduction)
+	result := getTotalAllowance(allowances, deductionData)
 
 	// Assert
 	assert.Equal(t, 150_000.0, result)

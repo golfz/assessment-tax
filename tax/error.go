@@ -2,6 +2,12 @@ package tax
 
 import "errors"
 
+var (
+	ErrReadingRequestBody = errors.New("cannot reading request body")
+	ErrGettingDeduction   = errors.New("error getting deduction")
+	ErrCalculatingTax     = errors.New("error calculating tax")
+)
+
 // Invalid tax information errors
 var (
 	ErrInvalidTaxInformation = errors.New("invalid tax information")
@@ -11,11 +17,7 @@ var (
 	ErrInvalidAllowanceAmount = errors.New("allowance amount must be greater than or equal to 0")
 )
 
-// Invalid deduction errors
+// Deduction errors
 var (
 	ErrInvalidDeduction = errors.New("invalid deduction")
-
-	ErrInvalidPersonalDeduction = errors.New("invalid personal deduction")
-	ErrInvalidKReceiptDeduction = errors.New("invalid k-receipt deduction")
-	ErrInvalidDonationDeduction = errors.New("invalid donation deduction")
 )

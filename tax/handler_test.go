@@ -5,6 +5,7 @@ package tax
 import (
 	"encoding/json"
 	"errors"
+	"github.com/golfz/assessment-tax/deduction"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -20,7 +21,7 @@ const (
 
 type mockTaxStorer struct {
 	result       TaxResult
-	deduction    Deduction
+	deduction    deduction.Deduction
 	err          error
 	methodToCall map[string]bool
 }
@@ -31,7 +32,7 @@ func NewMockTaxStorer() *mockTaxStorer {
 	}
 }
 
-func (m *mockTaxStorer) GetDeduction() (Deduction, error) {
+func (m *mockTaxStorer) GetDeduction() (deduction.Deduction, error) {
 	m.methodToCall[MethodGetDeduction] = true
 	return m.deduction, m.err
 }
@@ -70,7 +71,7 @@ func setup(method, url string, body interface{}) (*httptest.ResponseRecorder, ec
 }
 
 func TestCalculateTaxHandler_Success(t *testing.T) {
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
@@ -196,7 +197,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 			// Arrange
 			resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", tc.taxInfo)
 			mock.err = nil
-			mock.deduction = deduction
+			mock.deduction = defaultDeduction
 			mock.ExpectToCall(MethodGetDeduction)
 
 			// Act
@@ -218,7 +219,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 
 func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
 	// Arrange
-	deduction := Deduction{
+	defaultDeduction := deduction.Deduction{
 		Personal: 60_000.0,
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
@@ -284,7 +285,7 @@ func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
 			// Arrange
 			resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", tc.taxInfo)
 			mock.err = nil
-			mock.deduction = deduction
+			mock.deduction = defaultDeduction
 			mock.ExpectToCall(MethodGetDeduction)
 
 			// Act
@@ -384,7 +385,7 @@ func TestCalculateTaxHandler_Error(t *testing.T) {
 			},
 		}
 		resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", taxInfo)
-		mock.deduction = Deduction{}
+		mock.deduction = deduction.Deduction{}
 		mock.ExpectToCall(MethodGetDeduction)
 
 		// Act
