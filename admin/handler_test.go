@@ -80,7 +80,7 @@ func TestSetPersonalDeductionHandler_Success(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 	}
 	if rec.Code != http.StatusOK {
-		t.Errorf("expected status code 200, got %d", rec.Code)
+		t.Errorf("expected status code %d, got %d", http.StatusOK, rec.Code)
 	}
 	mock.Verify(t)
 	assert.Equal(t, amount, mock.whatIsAmount)
