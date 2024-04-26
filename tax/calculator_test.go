@@ -449,8 +449,8 @@ func TestCalculateTax_WithTaxLevel(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.wantTaxResult.Tax, got.Tax)
 			assert.Equal(t, tc.wantTaxResult.TaxRefund, got.TaxRefund)
-			for i, wantTaxLevel := range tc.wantTaxLevels {
-				assert.Equal(t, wantTaxLevel, got.TaxLevels[i].Tax)
+			for i, wantTax := range tc.wantTaxLevels {
+				assert.Equal(t, wantTax, got.TaxLevels[i].Tax)
 			}
 		})
 	}
@@ -514,11 +514,11 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 
 			// Assert
 			assert.Error(t, err)
-			for _, wantErr := range tc.wantErrors {
-				assert.ErrorIs(t, err, wantErr)
+			for _, wantError := range tc.wantErrors {
+				assert.ErrorIs(t, err, wantError)
 			}
-			for _, unwantedErr := range tc.unwantedErrors {
-				assert.NotErrorIs(t, err, unwantedErr)
+			for _, unwantedError := range tc.unwantedErrors {
+				assert.NotErrorIs(t, err, unwantedError)
 			}
 			assert.Equal(t, TaxResult{}, got)
 		})
