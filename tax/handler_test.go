@@ -216,6 +216,97 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 	}
 }
 
+func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
+	// Arrange
+	deduction := Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+	testcases := []struct {
+		name          string
+		taxInfo       TaxInformation
+		wantTaxResult TaxResult
+		wantTaxLevels []float64
+	}{
+		{
+			name: "EXP04: net-income=340,000 (rate=10%); expect tax=19,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200000.0},
+				},
+			},
+			wantTaxResult: TaxResult{Tax: 19_000.0, TaxRefund: 0.0},
+			wantTaxLevels: []float64{0.0, 19_000.0, 0.0, 0.0, 0.0},
+		},
+		{
+			name: "net-income=100,000 (rate=0%); expect tax=0",
+			taxInfo: TaxInformation{
+				TotalIncome: 260_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200000.0},
+				},
+			},
+			wantTaxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			wantTaxLevels: []float64{0.0, 0.0, 0.0, 0.0, 0.0},
+		},
+		{
+			name: "net-income=3,000,000 (rate=35%); expect tax=660,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 3_160_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200000.0},
+				},
+			},
+			wantTaxResult: TaxResult{Tax: 660_000.0, TaxRefund: 0.0},
+			wantTaxLevels: []float64{0.0, 35_000.0, 75_000.0, 200_000.0, 350_000.0},
+		},
+		{
+			name: "net-income=3,000,000 (rate=35%) wht=700,000; expect taxRefund=40,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 3_160_000.0,
+				WHT:         700_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 200000.0},
+				},
+			},
+			wantTaxResult: TaxResult{Tax: 0.0, TaxRefund: 40_000.0},
+			wantTaxLevels: []float64{0.0, 35_000.0, 75_000.0, 200_000.0, 350_000.0},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", tc.taxInfo)
+			mock.err = nil
+			mock.deduction = deduction
+			mock.ExpectToCall(MethodGetDeduction)
+
+			// Act
+			err := h.CalculateTaxHandler(c)
+
+			// Assert
+			mock.Verify(t)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, resp.Code)
+			var got TaxResult
+			if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+			}
+			assert.Equal(t, tc.wantTaxResult.Tax, got.Tax)
+			assert.Equal(t, tc.wantTaxResult.TaxRefund, got.TaxRefund)
+			for i, wantTax := range tc.wantTaxLevels {
+				assert.Equal(t, wantTax, got.TaxLevels[i].Tax)
+			}
+		})
+	}
+}
+
 func TestCalculateTaxHandler_Error(t *testing.T) {
 	t.Run("no content-type expect 400 with error message", func(t *testing.T) {
 		// Arrange
