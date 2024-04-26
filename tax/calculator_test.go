@@ -171,9 +171,9 @@ func TestCalculateTax_Success(t *testing.T) {
 		Donation: 100_000.0,
 	}
 	testcases := []struct {
-		name      string
-		taxInfo   TaxInformation
-		taxResult TaxResult
+		name    string
+		taxInfo TaxInformation
+		want    TaxResult
 	}{
 		{
 			name: "EXP01: only income, net-income=290,000 (rate=10%); expect tax=29,000",
@@ -184,7 +184,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 29_000.0},
+			want: TaxResult{Tax: 29_000.0},
 		},
 		{
 			name: "only income, net-income=150,000 (rate=0%); expect tax=0",
@@ -195,7 +195,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0},
+			want: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "only income, net-income=0 (rate=0%); expect tax=0",
@@ -206,7 +206,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0},
+			want: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "EXP02: tax-payable>wht; expect tax=4,000",
@@ -217,7 +217,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 4_000.0},
+			want: TaxResult{Tax: 4_000.0},
 		},
 		{
 			name: "tax-payable=wht; expect tax=0",
@@ -228,7 +228,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0},
+			want: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "tax-payable<wht; expect taxRefund=10,000",
@@ -239,7 +239,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			want: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "EXP03: income=500,000 donation=200,000; expect tax=19,000",
@@ -250,7 +250,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 19_000.0},
+			want: TaxResult{Tax: 19_000.0},
 		},
 		{
 			name: "income=500,000 wht=tax-payable donation=200,000; expect tax=0",
@@ -261,7 +261,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0},
+			want: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "income=500,000 wht>tax-payable donation=200,000; expect taxRefund=10,000",
@@ -272,7 +272,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			want: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "netIncome=0: income=200,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
@@ -283,7 +283,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0},
+			want: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "netIncome=0: income=200,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
@@ -295,7 +295,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			want: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "netIncome<0: income=150,000 deduction.personal=60,000 allowance=140,000; expect tax=0",
@@ -306,7 +306,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0},
+			want: TaxResult{Tax: 0.0},
 		},
 		{
 			name: "netIncome<0: income=150,000 wht=10,000 deduction.personal=60,000 allowance=140,000; expect taxRefund=10,000",
@@ -318,7 +318,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeKReceipt, Amount: 40_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			want: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "Multi Allowance, tax payable > WHT; expect tax",
@@ -332,7 +332,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
+			want: TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "Multi Allowance, tax payable = WHT; expect tax=0",
@@ -346,7 +346,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			want: TaxResult{Tax: 0.0, TaxRefund: 0.0},
 		},
 		{
 			name: "Multi Allowance, tax payable < WHT; expect taxRefund>0",
@@ -360,7 +360,7 @@ func TestCalculateTax_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			want: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 	}
 
@@ -371,8 +371,8 @@ func TestCalculateTax_Success(t *testing.T) {
 
 			// Assert
 			assert.NoError(t, err)
-			assert.Equal(t, tc.taxResult.Tax, got.Tax)
-			assert.Equal(t, tc.taxResult.TaxRefund, got.TaxRefund)
+			assert.Equal(t, tc.want.Tax, got.Tax)
+			assert.Equal(t, tc.want.TaxRefund, got.TaxRefund)
 		})
 	}
 }
@@ -465,34 +465,34 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 	}
 
 	testcases := []struct {
-		name             string
-		taxInformation   TaxInformation
-		expectedErrors   []error
-		unexpectedErrors []error
+		name           string
+		taxInformation TaxInformation
+		wantErrors     []error
+		unwantedErrors []error
 	}{
 		{
-			name:             "total income < 0",
-			taxInformation:   TaxInformation{TotalIncome: -1.0},
-			expectedErrors:   []error{ErrInvalidTotalIncome, ErrInvalidTaxInformation},
-			unexpectedErrors: []error{ErrInvalidWHT, ErrInvalidAllowanceAmount},
+			name:           "total income < 0",
+			taxInformation: TaxInformation{TotalIncome: -1.0},
+			wantErrors:     []error{ErrInvalidTotalIncome, ErrInvalidTaxInformation},
+			unwantedErrors: []error{ErrInvalidWHT, ErrInvalidAllowanceAmount},
 		},
 		{
-			name:             "WHT < 0",
-			taxInformation:   TaxInformation{TotalIncome: 100_000.0, WHT: -1.0},
-			expectedErrors:   []error{ErrInvalidWHT, ErrInvalidTaxInformation},
-			unexpectedErrors: []error{ErrInvalidTotalIncome, ErrInvalidAllowanceAmount},
+			name:           "WHT < 0",
+			taxInformation: TaxInformation{TotalIncome: 100_000.0, WHT: -1.0},
+			wantErrors:     []error{ErrInvalidWHT, ErrInvalidTaxInformation},
+			unwantedErrors: []error{ErrInvalidTotalIncome, ErrInvalidAllowanceAmount},
 		},
 		{
-			name:             "WHT > income",
-			taxInformation:   TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0},
-			expectedErrors:   []error{ErrInvalidWHT, ErrInvalidTaxInformation},
-			unexpectedErrors: []error{ErrInvalidTotalIncome, ErrInvalidAllowanceAmount},
+			name:           "WHT > income",
+			taxInformation: TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0},
+			wantErrors:     []error{ErrInvalidWHT, ErrInvalidTaxInformation},
+			unwantedErrors: []error{ErrInvalidTotalIncome, ErrInvalidAllowanceAmount},
 		},
 		{
-			name:             "total income < 0 and WHT < 0",
-			taxInformation:   TaxInformation{TotalIncome: -1.0, WHT: -1.0},
-			expectedErrors:   []error{ErrInvalidTotalIncome, ErrInvalidWHT, ErrInvalidTaxInformation},
-			unexpectedErrors: []error{ErrInvalidAllowanceAmount},
+			name:           "total income < 0 and WHT < 0",
+			taxInformation: TaxInformation{TotalIncome: -1.0, WHT: -1.0},
+			wantErrors:     []error{ErrInvalidTotalIncome, ErrInvalidWHT, ErrInvalidTaxInformation},
+			unwantedErrors: []error{ErrInvalidAllowanceAmount},
 		},
 		{
 			name: "some allowance < 0",
@@ -514,11 +514,11 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 
 			// Assert
 			assert.Error(t, err)
-			for _, expectedErr := range tc.expectedErrors {
-				assert.ErrorIs(t, err, expectedErr)
+			for _, wantErr := range tc.wantErrors {
+				assert.ErrorIs(t, err, wantErr)
 			}
-			for _, unexpectedErr := range tc.unexpectedErrors {
-				assert.NotErrorIs(t, err, unexpectedErr)
+			for _, unwantedErr := range tc.unwantedErrors {
+				assert.NotErrorIs(t, err, unwantedErr)
 			}
 			assert.Equal(t, TaxResult{}, got)
 		})
