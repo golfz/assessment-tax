@@ -736,6 +736,133 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "EXP05: set personal deduction = 70,000 (expect 70,000)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect personalDeduction is 70,000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.personalDeduction).to.eql(70000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\": 70000.0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/admin/deductions/personal",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"deductions",
+								"personal"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "set default personal deduction = 60,000 (expect 60,000)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect personalDeduction is 60,000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.personalDeduction).to.eql(60000);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\": 60000.0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/admin/deductions/personal",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"deductions",
+								"personal"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

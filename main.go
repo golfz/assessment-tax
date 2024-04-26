@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	"fmt"
+	"github.com/golfz/assessment-tax/admin"
 	"github.com/golfz/assessment-tax/config"
 	"github.com/golfz/assessment-tax/postgres"
 	"github.com/golfz/assessment-tax/tax"
@@ -41,6 +43,20 @@ func main() {
 
 	hTax := tax.New(pg)
 	e.POST("/tax/calculations", hTax.CalculateTaxHandler)
+
+	a := e.Group("/admin")
+
+	a.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		// Be careful to use constant time comparison to prevent timing attacks
+		if subtle.ConstantTimeCompare([]byte(username), []byte("adminTax")) == 1 &&
+			subtle.ConstantTimeCompare([]byte(password), []byte("admin!")) == 1 {
+			return true, nil
+		}
+		return false, nil
+	}))
+
+	hAdmin := admin.New(pg)
+	a.POST("/deductions/personal", hAdmin.SetPersonalDeductionHandler)
 
 	// monitor shutdown signal
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
