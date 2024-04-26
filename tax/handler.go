@@ -7,7 +7,6 @@ import (
 	"github.com/golfz/assessment-tax/deduction"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"strconv"
 )
 
 type Storer interface {
@@ -87,58 +86,19 @@ func (h *Handler) UploadCSVHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingCSV.Error()})
 	}
 
-	result := CSVResponse{}
+	deductionData, err := h.store.GetDeduction()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Err{Message: ErrGettingDeduction.Error()})
+	}
 
-	for i, row := range records {
-		if i == 0 {
-			continue
+	result, err := CalculateTaxFromCSV(records, deductionData)
+	if err != nil {
+		if errors.Is(err, ErrParsingData) {
+			return c.JSON(http.StatusBadRequest, Err{Message: ErrParsingData.Error()})
 		}
-
-		taxInfo := TaxInformation{}
-
-		for colNum, colVal := range row {
-			switch colNum {
-			case 0:
-				totalIncome, err := strconv.ParseFloat(colVal, 64)
-				if err != nil {
-					return c.JSON(http.StatusBadRequest, Err{Message: ErrParsingData.Error()})
-				}
-				taxInfo.TotalIncome = totalIncome
-			case 1:
-				wht, err := strconv.ParseFloat(colVal, 64)
-				if err != nil {
-					return c.JSON(http.StatusBadRequest, Err{Message: ErrParsingData.Error()})
-				}
-				taxInfo.WHT = wht
-			case 2:
-				donation, err := strconv.ParseFloat(colVal, 64)
-				if err != nil {
-					return c.JSON(http.StatusBadRequest, Err{Message: ErrParsingData.Error()})
-				}
-				taxInfo.Allowances = []Allowance{
-					{Type: AllowanceTypeDonation, Amount: donation},
-				}
-			}
-		}
-
-		deductionData, err := h.store.GetDeduction()
-		if err != nil {
-			c.Logger().Printf("error getting deduction: %v", err)
-			return c.JSON(http.StatusInternalServerError, Err{Message: ErrGettingDeduction.Error()})
-		}
-
-		taxResult, err := CalculateTax(taxInfo, deductionData)
-		if err != nil {
-			c.Logger().Printf("error calculating tax: %v", err)
+		if errors.Is(err, ErrCalculatingTax) {
 			return c.JSON(http.StatusInternalServerError, Err{Message: ErrCalculatingTax.Error()})
 		}
-
-		result.Taxes = append(result.Taxes, CSVTaxResult{
-			TotalIncome: taxInfo.TotalIncome,
-			Tax:         taxResult.Tax,
-			TaxRefund:   taxResult.TaxRefund,
-		})
-
 	}
 
 	return c.JSON(http.StatusOK, result)
