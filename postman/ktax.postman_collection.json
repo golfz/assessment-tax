@@ -10,7 +10,7 @@
 			"name": "calculations",
 			"item": [
 				{
-					"name": "EXP1: calculate-tax (success)",
+					"name": "EXP01: calculate-tax (success)",
 					"event": [
 						{
 							"listen": "test",
@@ -55,7 +55,7 @@
 					"response": []
 				},
 				{
-					"name": "EXP1: calculate-tax (income<0, code 400)",
+					"name": "income<0 (expect code 400)",
 					"event": [
 						{
 							"listen": "test",
@@ -104,7 +104,7 @@
 					"response": []
 				},
 				{
-					"name": "EXP1: calculate-tax (no content-type, code 400)",
+					"name": "no content-type (expect code 400)",
 					"event": [
 						{
 							"listen": "test",
@@ -155,7 +155,7 @@
 					"response": []
 				},
 				{
-					"name": "EXP2: calculate-tax (tax > 0)",
+					"name": "EXP02: calculate-tax (expect tax)",
 					"event": [
 						{
 							"listen": "test",
@@ -200,7 +200,7 @@
 					"response": []
 				},
 				{
-					"name": "EXP2: calculate-tax (tax = 0)",
+					"name": "wht = tax payable (expect tax = 0)",
 					"event": [
 						{
 							"listen": "test",
@@ -245,7 +245,7 @@
 					"response": []
 				},
 				{
-					"name": "EXP2: calculate-tax (tax = 0, taxRefund > 0)",
+					"name": "wht > tax payable (expect taxRefund)",
 					"event": [
 						{
 							"listen": "test",
@@ -290,7 +290,7 @@
 					"response": []
 				},
 				{
-					"name": "EXP3: calculate with allowance (expect tax)",
+					"name": "EXP03: calculate with allowance (expect tax)",
 					"event": [
 						{
 							"listen": "test",
@@ -450,6 +450,272 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"totalIncome\": 600000.0,\r\n    \"wht\": 34000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 40000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 30000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 80000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 70000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EXP04: net-income=340,000 (rate=10%) (expect tax, level2)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 19000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(19000);\r",
+									"});\r",
+									"pm.test(\"expect taxLevel length 5\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxLevel.length).to.eq(5)\r",
+									"})\r",
+									"pm.test(\"expect level 2 = 19000\", function () {\r",
+									"    var responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
+									"    \r",
+									"    responseData.taxLevel.forEach((tax) => {\r",
+									"        if (tax.level === \"2\") {\r",
+									"            pm.expect(tax.tax).to.equal(19000);\r",
+									"        }\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{  \r\n  \"totalIncome\": 500000.0,  \r\n  \"wht\": 0.0,  \r\n  \"allowances\": [  \r\n    {  \r\n      \"allowanceType\": \"donation\",  \r\n      \"amount\": 200000.0  \r\n    }  \r\n  ]  \r\n}  ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "net-income=100,000 (rate=0%) (expect tax=0, all level=0)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 0\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(0);\r",
+									"});\r",
+									"pm.test(\"expect taxLevel length 5\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxLevel.length).to.eq(5)\r",
+									"})\r",
+									"pm.test(\"expect all level = 0\", function () {\r",
+									"    var responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
+									"    \r",
+									"    responseData.taxLevel.forEach((tax) => {\r",
+									"        pm.expect(tax.tax).to.equal(0);\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 260000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 200000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "net-income=3,000,000 (rate=35%) (expect tax=660,000, all level > 0)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 660,000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(660000);\r",
+									"});\r",
+									"pm.test(\"expect taxLevel length 5\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxLevel.length).to.eq(5)\r",
+									"})\r",
+									"pm.test(\"expect all level\", function () {\r",
+									"    var responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
+									"    \r",
+									"    responseData.taxLevel.forEach((tax) => {\r",
+									"        if (tax.level === \"1\") {\r",
+									"            pm.expect(tax.tax).to.equal(0);\r",
+									"        }\r",
+									"        if (tax.level === \"2\") {\r",
+									"            pm.expect(tax.tax).to.equal(35000);\r",
+									"        }\r",
+									"        if (tax.level === \"3\") {\r",
+									"            pm.expect(tax.tax).to.equal(75000);\r",
+									"        }\r",
+									"        if (tax.level === \"4\") {\r",
+									"            pm.expect(tax.tax).to.equal(200000);\r",
+									"        }\r",
+									"        if (tax.level === \"5\") {\r",
+									"            pm.expect(tax.tax).to.equal(350000);\r",
+									"        }\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 3160000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 200000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "net-income=3,000,000 (rate=35%) wht > tax payable (expect taxRefund, all level > 0)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 0\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(0);\r",
+									"});\r",
+									"pm.test(\"expect taxRefund is 40,000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxRefund).to.eql(40000);\r",
+									"});\r",
+									"pm.test(\"expect taxLevel length 5\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxLevel.length).to.eq(5)\r",
+									"})\r",
+									"pm.test(\"expect all level\", function () {\r",
+									"    var responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
+									"    \r",
+									"    responseData.taxLevel.forEach((tax) => {\r",
+									"        if (tax.level === \"1\") {\r",
+									"            pm.expect(tax.tax).to.equal(0);\r",
+									"        }\r",
+									"        if (tax.level === \"2\") {\r",
+									"            pm.expect(tax.tax).to.equal(35000);\r",
+									"        }\r",
+									"        if (tax.level === \"3\") {\r",
+									"            pm.expect(tax.tax).to.equal(75000);\r",
+									"        }\r",
+									"        if (tax.level === \"4\") {\r",
+									"            pm.expect(tax.tax).to.equal(200000);\r",
+									"        }\r",
+									"        if (tax.level === \"5\") {\r",
+									"            pm.expect(tax.tax).to.equal(350000);\r",
+									"        }\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 3160000.0,\r\n    \"wht\": 700000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 200000.0\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
