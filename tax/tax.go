@@ -19,8 +19,14 @@ type TaxInformation struct {
 }
 
 type TaxResult struct {
-	Tax       float64 `json:"tax"`
-	TaxRefund float64 `json:"taxRefund,omitempty"`
+	Tax       float64    `json:"tax"`
+	TaxRefund float64    `json:"taxRefund,omitempty"`
+	TaxLevels []TaxLevel `json:"taxLevel"`
+}
+
+type TaxLevel struct {
+	Level string  `json:"level"`
+	Tax   float64 `json:"tax"`
 }
 
 type Deduction struct {
@@ -30,7 +36,8 @@ type Deduction struct {
 }
 
 type rate struct {
-	lowerBound float64
-	upperBound float64
-	percentage float64
+	lowerBound  float64
+	upperBound  float64
+	percentage  float64
+	description string
 }
