@@ -19,9 +19,9 @@ import (
 
 func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testing.T) {
 	testcases := []struct {
-		name      string
-		taxInfo   tax.TaxInformation
-		taxResult tax.TaxResult
+		name          string
+		taxInfo       tax.TaxInformation
+		wantTaxResult tax.TaxResult
 	}{
 		{
 			name: "EXP01: basic income, no WHT, no Allowance; expect tax",
@@ -32,7 +32,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 29_000.0, TaxRefund: 0.0},
+			wantTaxResult: tax.TaxResult{Tax: 29_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "EXP02: Income and WHT, no Allowance; expect tax",
@@ -43,7 +43,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
+			wantTaxResult: tax.TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "EXP03: Income and Allowance, no WHT; expect tax",
@@ -54,7 +54,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 19_000.0, TaxRefund: 0.0},
+			wantTaxResult: tax.TaxResult{Tax: 19_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "One Allowance, tax payable > WHT; expect tax",
@@ -65,7 +65,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
+			wantTaxResult: tax.TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "One Allowance, tax payable = WHT; expect tax=0",
@@ -76,7 +76,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			wantTaxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 0.0},
 		},
 		{
 			name: "One Allowance, tax payable < WHT; expect taxRefund",
@@ -87,7 +87,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			wantTaxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "Multi Allowance, tax payable > WHT; expect tax",
@@ -101,7 +101,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
+			wantTaxResult: tax.TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "Multi Allowance, tax payable = WHT; expect tax=0",
@@ -115,7 +115,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			wantTaxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 0.0},
 		},
 		{
 			name: "Multi Allowance, tax payable < WHT; expect taxRefund>0",
@@ -129,7 +129,7 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 					{Type: tax.AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			wantTaxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 	}
 
@@ -160,11 +160,11 @@ func TestCalculateTaxIntegration_Success_200_OK_With_Tax_And_TaxRefund(t *testin
 			// Assert
 			assert.Equal(t, http.StatusOK, rec.Code)
 
-			var got tax.TaxResult
-			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+			var gotTaxResult tax.TaxResult
+			if err := json.Unmarshal(rec.Body.Bytes(), &gotTaxResult); err != nil {
 				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
 			}
-			assert.Equal(t, tc.taxResult, got)
+			assert.Equal(t, tc.wantTaxResult, gotTaxResult)
 		})
 	}
 

@@ -206,12 +206,12 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 			mock.Verify(t)
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, resp.Code)
-			var got TaxResult
-			if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			var gotTaxResult TaxResult
+			if err := json.Unmarshal(resp.Body.Bytes(), &gotTaxResult); err != nil {
 				t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 			}
-			assert.Equal(t, tc.wantTaxResult.Tax, got.Tax)
-			assert.Equal(t, tc.wantTaxResult.TaxRefund, got.TaxRefund)
+			assert.Equal(t, tc.wantTaxResult.Tax, gotTaxResult.Tax)
+			assert.Equal(t, tc.wantTaxResult.TaxRefund, gotTaxResult.TaxRefund)
 		})
 	}
 }
@@ -294,14 +294,14 @@ func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
 			mock.Verify(t)
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, resp.Code)
-			var got TaxResult
-			if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			var gotTaxResult TaxResult
+			if err := json.Unmarshal(resp.Body.Bytes(), &gotTaxResult); err != nil {
 				t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 			}
-			assert.Equal(t, tc.wantTaxResult.Tax, got.Tax)
-			assert.Equal(t, tc.wantTaxResult.TaxRefund, got.TaxRefund)
+			assert.Equal(t, tc.wantTaxResult.Tax, gotTaxResult.Tax)
+			assert.Equal(t, tc.wantTaxResult.TaxRefund, gotTaxResult.TaxRefund)
 			for i, wantTax := range tc.wantTaxLevels {
-				assert.Equal(t, wantTax, got.TaxLevels[i].Tax)
+				assert.Equal(t, wantTax, gotTaxResult.TaxLevels[i].Tax)
 			}
 		})
 	}
