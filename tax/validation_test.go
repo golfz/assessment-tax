@@ -59,29 +59,29 @@ func TestValidateTaxInformation_Success(t *testing.T) {
 func TestValidateTaxInformation_Error(t *testing.T) {
 	// Arrange
 	testcases := []struct {
-		name    string
-		taxInfo TaxInformation
-		error   []error
+		name       string
+		taxInfo    TaxInformation
+		wantErrors []error
 	}{
 		{
-			name:    "total income < 0",
-			taxInfo: TaxInformation{TotalIncome: -1.0},
-			error:   []error{ErrInvalidTotalIncome},
+			name:       "total income < 0",
+			taxInfo:    TaxInformation{TotalIncome: -1.0},
+			wantErrors: []error{ErrInvalidTotalIncome},
 		},
 		{
-			name:    "WHT < 0",
-			taxInfo: TaxInformation{TotalIncome: 100_000.0, WHT: -1.0},
-			error:   []error{ErrInvalidWHT},
+			name:       "WHT < 0",
+			taxInfo:    TaxInformation{TotalIncome: 100_000.0, WHT: -1.0},
+			wantErrors: []error{ErrInvalidWHT},
 		},
 		{
-			name:    "WHT > income",
-			taxInfo: TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0},
-			error:   []error{ErrInvalidWHT},
+			name:       "WHT > income",
+			taxInfo:    TaxInformation{TotalIncome: 100_000.0, WHT: 200_000.0},
+			wantErrors: []error{ErrInvalidWHT},
 		},
 		{
-			name:    "total income < 0 and WHT < 0",
-			taxInfo: TaxInformation{TotalIncome: -1.0, WHT: -1.0},
-			error:   []error{ErrInvalidTotalIncome, ErrInvalidWHT},
+			name:       "total income < 0 and WHT < 0",
+			taxInfo:    TaxInformation{TotalIncome: -1.0, WHT: -1.0},
+			wantErrors: []error{ErrInvalidTotalIncome, ErrInvalidWHT},
 		},
 		{
 			name: "some allowance < 0",
@@ -93,7 +93,7 @@ func TestValidateTaxInformation_Error(t *testing.T) {
 					{Type: AllowanceTypeKReceipt, Amount: 10_000.0},
 				},
 			},
-			error: []error{ErrInvalidAllowanceAmount},
+			wantErrors: []error{ErrInvalidAllowanceAmount},
 		},
 	}
 
@@ -105,8 +105,8 @@ func TestValidateTaxInformation_Error(t *testing.T) {
 			// Assert
 			assert.Error(t, gotError)
 
-			for _, wantErr := range tc.error {
-				assert.ErrorIs(t, gotError, wantErr)
+			for _, wantError := range tc.wantErrors {
+				assert.ErrorIs(t, gotError, wantError)
 			}
 		})
 	}
@@ -196,9 +196,9 @@ func TestValidateDeduction_Error(t *testing.T) {
 	}
 	// Arrange
 	testcases := []struct {
-		name      string
-		deduction Deduction
-		wantError []error
+		name       string
+		deduction  Deduction
+		wantErrors []error
 	}{
 		// personal deduction
 		{
@@ -208,7 +208,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: []error{ErrInvalidPersonalDeduction},
+			wantErrors: []error{ErrInvalidPersonalDeduction},
 		},
 		{
 			name: "personal deduction > max",
@@ -217,7 +217,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: []error{ErrInvalidPersonalDeduction},
+			wantErrors: []error{ErrInvalidPersonalDeduction},
 		},
 		// KReceipt deduction
 		{
@@ -227,7 +227,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 				KReceipt: ConstraintMinKReceiptDeduction,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: []error{ErrInvalidKReceiptDeduction},
+			wantErrors: []error{ErrInvalidKReceiptDeduction},
 		},
 		{
 			name: "KReceipt deduction > max",
@@ -236,7 +236,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: []error{ErrInvalidKReceiptDeduction},
+			wantErrors: []error{ErrInvalidKReceiptDeduction},
 		},
 		// Donation deduction
 		{
@@ -247,7 +247,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
 				Donation: ConstraintMaxDonationDeduction + 0.1,
 			},
-			wantError: []error{ErrInvalidDonationDeduction},
+			wantErrors: []error{ErrInvalidDonationDeduction},
 		},
 		// Multiple errors
 		{
@@ -257,7 +257,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
-			wantError: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction},
+			wantErrors: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction},
 		},
 		{
 			name: "personal deduction > max, KReceipt deduction > max, Donation deduction > max",
@@ -266,7 +266,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
 				Donation: ConstraintMaxDonationDeduction + 0.1,
 			},
-			wantError: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction, ErrInvalidDonationDeduction},
+			wantErrors: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction, ErrInvalidDonationDeduction},
 		},
 	}
 
@@ -277,8 +277,8 @@ func TestValidateDeduction_Error(t *testing.T) {
 
 			// Assert
 			assert.Error(t, gotError)
-			for _, wantErr := range tc.wantError {
-				assert.ErrorIs(t, gotError, wantErr)
+			for _, wantError := range tc.wantErrors {
+				assert.ErrorIs(t, gotError, wantError)
 			}
 		})
 	}
