@@ -24,17 +24,38 @@ var (
 	ErrInvalidDonationDeduction = errors.New("invalid donation deduction")
 )
 
-func (d Deduction) Validate() (err error) {
-	if d.Personal <= MinPersonalDeduction || d.Personal > MaxPersonalDeduction {
+func ValidatePersonalDeduction(personal float64) (err error) {
+	if personal <= MinPersonalDeduction || personal > MaxPersonalDeduction {
 		err = errors.Join(err, ErrInvalidPersonalDeduction)
 	}
+	return
+}
 
-	if d.KReceipt <= MinKReceiptDeduction || d.KReceipt > MaxKReceiptDeduction {
+func ValidateKReceiptDeduction(kReceipt float64) (err error) {
+	if kReceipt <= MinKReceiptDeduction || kReceipt > MaxKReceiptDeduction {
 		err = errors.Join(err, ErrInvalidKReceiptDeduction)
 	}
+	return
+}
 
-	if d.Donation > MaxDonationDeduction {
+func ValidateDonationDeduction(donation float64) (err error) {
+	if donation > MaxDonationDeduction {
 		err = errors.Join(err, ErrInvalidDonationDeduction)
+	}
+	return
+}
+
+func (d Deduction) Validate() (err error) {
+	if e := ValidatePersonalDeduction(d.Personal); e != nil {
+		err = errors.Join(err, e)
+	}
+
+	if e := ValidateKReceiptDeduction(d.KReceipt); e != nil {
+		err = errors.Join(err, e)
+	}
+
+	if e := ValidateDonationDeduction(d.Donation); e != nil {
+		err = errors.Join(err, e)
 	}
 	return
 }
