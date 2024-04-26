@@ -170,7 +170,7 @@ func TestCalculateTaxIntegration_Success(t *testing.T) {
 	}
 }
 
-func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
+func TestCalculateTaxIntegration_WithTaxLevel_Success(t *testing.T) {
 	// Arrange
 	testcases := []struct {
 		name          string

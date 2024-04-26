@@ -61,5 +61,5 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingPersonalDeduction.Error()})
 	}
 
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusOK, PersonalDeduction{PersonalDeduction: input.Amount})
 }

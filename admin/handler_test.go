@@ -98,14 +98,15 @@ func TestSetPersonalDeductionHandler_Success(t *testing.T) {
 			err := h.SetPersonalDeductionHandler(c)
 
 			// Assert
-			if err != nil {
-				t.Errorf("expected no error, got %v", err)
-			}
-			if rec.Code != http.StatusOK {
-				t.Errorf("expected status code %d, got %d", http.StatusOK, rec.Code)
-			}
 			mock.Verify(t)
 			assert.Equal(t, tc.amount, mock.whatIsAmount)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			var got PersonalDeduction
+			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+			}
+			assert.Equal(t, tc.amount, got.PersonalDeduction)
 		})
 	}
 }
