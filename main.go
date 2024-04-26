@@ -47,9 +47,8 @@ func main() {
 	a := e.Group("/admin")
 
 	a.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		// Be careful to use constant time comparison to prevent timing attacks
-		if subtle.ConstantTimeCompare([]byte(username), []byte("adminTax")) == 1 &&
-			subtle.ConstantTimeCompare([]byte(password), []byte("admin!")) == 1 {
+		if subtle.ConstantTimeCompare([]byte(username), []byte(cfg.AdminUsername)) == 1 &&
+			subtle.ConstantTimeCompare([]byte(password), []byte(cfg.AdminPassword)) == 1 {
 			return true, nil
 		}
 		return false, nil
