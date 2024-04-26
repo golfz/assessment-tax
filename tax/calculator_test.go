@@ -3,6 +3,7 @@
 package tax
 
 import (
+	"github.com/golfz/assessment-tax/rule"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -529,7 +530,7 @@ func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 	t.Run("personal deduction > max", func(t *testing.T) {
 		// Arrange
 		invalidDeduction := Deduction{
-			Personal: ConstraintMaxPersonalDeduction + 0.1,
+			Personal: rule.MaxPersonalDeduction + 0.1,
 			KReceipt: 50_000.0,
 			Donation: 100_000.0,
 		}
@@ -550,8 +551,8 @@ func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 		// Arrange
 		invalidDeduction := Deduction{
 			Personal: 60_000.0,
-			KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
-			Donation: ConstraintMaxDonationDeduction + 0.1,
+			KReceipt: rule.MaxKReceiptDeduction + 0.1,
+			Donation: rule.MaxDonationDeduction + 0.1,
 		}
 
 		// Act

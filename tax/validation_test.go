@@ -3,6 +3,7 @@
 package tax
 
 import (
+	"github.com/golfz/assessment-tax/rule"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -136,7 +137,7 @@ func TestValidateDeduction_Success(t *testing.T) {
 		{
 			name: "personal deduction = min",
 			deduction: Deduction{
-				Personal: ConstraintMinPersonalDeduction + 0.1,
+				Personal: rule.MinPersonalDeduction + 0.1,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
@@ -144,7 +145,7 @@ func TestValidateDeduction_Success(t *testing.T) {
 		{
 			name: "personal deduction = max",
 			deduction: Deduction{
-				Personal: ConstraintMaxPersonalDeduction,
+				Personal: rule.MaxPersonalDeduction,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
@@ -154,7 +155,7 @@ func TestValidateDeduction_Success(t *testing.T) {
 			name: "KReceipt deduction = min",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
-				KReceipt: ConstraintMinKReceiptDeduction + 0.1,
+				KReceipt: rule.MinKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
 		},
@@ -162,7 +163,7 @@ func TestValidateDeduction_Success(t *testing.T) {
 			name: "KReceipt deduction = max",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
-				KReceipt: ConstraintMaxKReceiptDeduction,
+				KReceipt: rule.MaxKReceiptDeduction,
 				Donation: defaultDeduction.Donation,
 			},
 		},
@@ -172,7 +173,7 @@ func TestValidateDeduction_Success(t *testing.T) {
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
 				KReceipt: defaultDeduction.KReceipt,
-				Donation: ConstraintMaxDonationDeduction,
+				Donation: rule.MaxDonationDeduction,
 			},
 		},
 	}
@@ -204,7 +205,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 		{
 			name: "personal deduction < min",
 			deduction: Deduction{
-				Personal: ConstraintMinPersonalDeduction,
+				Personal: rule.MinPersonalDeduction,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
@@ -213,7 +214,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 		{
 			name: "personal deduction > max",
 			deduction: Deduction{
-				Personal: ConstraintMaxPersonalDeduction + 0.1,
+				Personal: rule.MaxPersonalDeduction + 0.1,
 				KReceipt: defaultDeduction.KReceipt,
 				Donation: defaultDeduction.Donation,
 			},
@@ -224,7 +225,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 			name: "KReceipt deduction < min",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
-				KReceipt: ConstraintMinKReceiptDeduction,
+				KReceipt: rule.MinKReceiptDeduction,
 				Donation: defaultDeduction.Donation,
 			},
 			wantErrors: []error{ErrInvalidKReceiptDeduction},
@@ -233,7 +234,7 @@ func TestValidateDeduction_Error(t *testing.T) {
 			name: "KReceipt deduction > max",
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
-				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
+				KReceipt: rule.MaxKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
 			wantErrors: []error{ErrInvalidKReceiptDeduction},
@@ -244,8 +245,8 @@ func TestValidateDeduction_Error(t *testing.T) {
 			deduction: Deduction{
 				Personal: defaultDeduction.Personal,
 				//KReceipt: defaultDeduction.KReceipt,
-				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
-				Donation: ConstraintMaxDonationDeduction + 0.1,
+				KReceipt: rule.MaxKReceiptDeduction + 0.1,
+				Donation: rule.MaxDonationDeduction + 0.1,
 			},
 			wantErrors: []error{ErrInvalidDonationDeduction},
 		},
@@ -253,8 +254,8 @@ func TestValidateDeduction_Error(t *testing.T) {
 		{
 			name: "personal deduction > max, KReceipt deduction > max",
 			deduction: Deduction{
-				Personal: ConstraintMaxPersonalDeduction + 0.1,
-				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
+				Personal: rule.MaxPersonalDeduction + 0.1,
+				KReceipt: rule.MaxKReceiptDeduction + 0.1,
 				Donation: defaultDeduction.Donation,
 			},
 			wantErrors: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction},
@@ -262,9 +263,9 @@ func TestValidateDeduction_Error(t *testing.T) {
 		{
 			name: "personal deduction > max, KReceipt deduction > max, Donation deduction > max",
 			deduction: Deduction{
-				Personal: ConstraintMaxPersonalDeduction + 0.1,
-				KReceipt: ConstraintMaxKReceiptDeduction + 0.1,
-				Donation: ConstraintMaxDonationDeduction + 0.1,
+				Personal: rule.MaxPersonalDeduction + 0.1,
+				KReceipt: rule.MaxKReceiptDeduction + 0.1,
+				Donation: rule.MaxDonationDeduction + 0.1,
 			},
 			wantErrors: []error{ErrInvalidPersonalDeduction, ErrInvalidKReceiptDeduction, ErrInvalidDonationDeduction},
 		},
