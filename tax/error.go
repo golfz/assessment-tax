@@ -2,6 +2,12 @@ package tax
 
 import "errors"
 
+var (
+	ErrReadingRequestBody = errors.New("cannot reading request body")
+	ErrGettingDeduction   = errors.New("error getting deduction")
+	ErrCalculatingTax     = errors.New("error calculating tax")
+)
+
 // Invalid tax information errors
 var (
 	ErrInvalidTaxInformation = errors.New("invalid tax information")

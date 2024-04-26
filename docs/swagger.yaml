@@ -1,11 +1,28 @@
 basePath: /
 definitions:
-  tax.Allowance:
+  admin.Err:
+    properties:
+      message:
+        type: string
+    type: object
+  admin.Input:
     properties:
       amount:
+        minimum: 0
         type: number
-      type:
+    type: object
+  admin.PersonalDeduction:
+    properties:
+      personalDeduction:
+        type: number
+    type: object
+  tax.Allowance:
+    properties:
+      allowanceType:
         $ref: '#/definitions/tax.AllowanceType'
+      amount:
+        minimum: 0
+        type: number
     type: object
   tax.AllowanceType:
     enum:
@@ -27,13 +44,30 @@ definitions:
           $ref: '#/definitions/tax.Allowance'
         type: array
       totalIncome:
+        minimum: 0
         type: number
       wht:
+        minimum: 0
+        type: number
+    required:
+    - totalIncome
+    type: object
+  tax.TaxLevel:
+    properties:
+      level:
+        type: string
+      tax:
         type: number
     type: object
   tax.TaxResult:
     properties:
       tax:
+        type: number
+      taxLevel:
+        items:
+          $ref: '#/definitions/tax.TaxLevel'
+        type: array
+      taxRefund:
         type: number
     type: object
 host: localhost:8080
@@ -43,6 +77,36 @@ info:
   title: K-Tax API
   version: "1.0"
 paths:
+  /admin/deductions/personal:
+    post:
+      consumes:
+      - application/json
+      description: Admin set personal deduction
+      parameters:
+      - description: Amount to set personal deduction
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/admin.Input'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.PersonalDeduction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/admin.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/admin.Err'
+      summary: Admin set personal deduction
+      tags:
+      - admin
   /tax/calculations:
     post:
       consumes:

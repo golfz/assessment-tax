@@ -15,6 +15,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/deductions/personal": {
+            "post": {
+                "description": "Admin set personal deduction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Admin set personal deduction",
+                "parameters": [
+                    {
+                        "description": "Amount to set personal deduction",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.Input"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin.PersonalDeduction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/tax/calculations": {
             "post": {
                 "description": "Calculate tax",
@@ -63,14 +109,40 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "tax.Allowance": {
+        "admin.Err": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "admin.Input": {
             "type": "object",
             "properties": {
                 "amount": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "admin.PersonalDeduction": {
+            "type": "object",
+            "properties": {
+                "personalDeduction": {
                     "type": "number"
-                },
-                "type": {
+                }
+            }
+        },
+        "tax.Allowance": {
+            "type": "object",
+            "properties": {
+                "allowanceType": {
                     "$ref": "#/definitions/tax.AllowanceType"
+                },
+                "amount": {
+                    "type": "number",
+                    "minimum": 0
                 }
             }
         },
@@ -95,6 +167,9 @@ const docTemplate = `{
         },
         "tax.TaxInformation": {
             "type": "object",
+            "required": [
+                "totalIncome"
+            ],
             "properties": {
                 "allowances": {
                     "type": "array",
@@ -103,9 +178,22 @@ const docTemplate = `{
                     }
                 },
                 "totalIncome": {
-                    "type": "number"
+                    "type": "number",
+                    "minimum": 0
                 },
                 "wht": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "tax.TaxLevel": {
+            "type": "object",
+            "properties": {
+                "level": {
+                    "type": "string"
+                },
+                "tax": {
                     "type": "number"
                 }
             }
@@ -114,6 +202,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "tax": {
+                    "type": "number"
+                },
+                "taxLevel": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tax.TaxLevel"
+                    }
+                },
+                "taxRefund": {
                     "type": "number"
                 }
             }

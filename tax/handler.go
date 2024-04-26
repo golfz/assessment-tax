@@ -40,7 +40,7 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	err := c.Bind(&taxInfo)
 	if err != nil {
 		c.Logger().Printf("error reading request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: "cannot reading request body"})
+		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingRequestBody.Error()})
 	}
 
 	validate := validator.New()
@@ -52,7 +52,7 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	deduction, err := h.store.GetDeduction()
 	if err != nil {
 		c.Logger().Printf("error getting deduction: %v", err)
-		return c.JSON(http.StatusInternalServerError, Err{Message: "error getting deduction"})
+		return c.JSON(http.StatusInternalServerError, Err{Message: ErrGettingDeduction.Error()})
 	}
 
 	result, err := CalculateTax(taxInfo, deduction)
@@ -61,7 +61,7 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 		if errors.Is(err, ErrInvalidTaxInformation) {
 			return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidTaxInformation.Error()})
 		}
-		return c.JSON(http.StatusInternalServerError, Err{Message: "error calculating tax"})
+		return c.JSON(http.StatusInternalServerError, Err{Message: ErrCalculatingTax.Error()})
 	}
 
 	return c.JSON(http.StatusOK, result)
