@@ -567,3 +567,77 @@ func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 		assert.Equal(t, TaxResult{}, got)
 	})
 }
+
+func TestCalculateTaxFromCSV_Success(t *testing.T) {
+	deductionData := deduction.Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	t.Run("EXP06: multiple records", func(t *testing.T) {
+		// Arrange
+		records := []TaxInformation{
+			{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			{
+				TotalIncome: 600_000.0,
+				WHT:         40_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 20_000.0},
+				},
+			},
+			{
+				TotalIncome: 750_000.0,
+				WHT:         50_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 15_000.0},
+				},
+			},
+		}
+		want := CsvTaxResponse{
+			Taxes: []CsvTaxRecord{
+				{TotalIncome: 500_000.0, Tax: 29_000.0, TaxRefund: 0.0},
+				{TotalIncome: 600_000.0, Tax: 0.0, TaxRefund: 2_000.0},
+				{TotalIncome: 750_000.0, Tax: 11_250.0, TaxRefund: 0.0},
+			},
+		}
+
+		// Act
+		got, err := CalculateTaxFromCSV(records, deductionData)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, want, got)
+	})
+}
+
+func TestCalculateTaxFromCSV_Error(t *testing.T) {
+	t.Run("empty deduction error when calculating tax", func(t *testing.T) {
+		// Arrange
+		emptyDeduction := deduction.Deduction{}
+		records := []TaxInformation{
+			{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+		}
+		want := CsvTaxResponse{}
+
+		// Act
+		got, err := CalculateTaxFromCSV(records, emptyDeduction)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrCalculatingTax)
+		assert.Equal(t, want, got)
+	})
+}
