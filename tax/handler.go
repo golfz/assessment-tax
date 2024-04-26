@@ -1,7 +1,6 @@
 package tax
 
 import (
-	"encoding/csv"
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/golfz/assessment-tax/deduction"
@@ -80,8 +79,7 @@ func (h *Handler) UploadCSVHandler(c echo.Context) error {
 	}
 	defer file.Close()
 
-	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
+	records, err := readCSV(file)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingCSV.Error()})
 	}
