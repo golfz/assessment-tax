@@ -77,9 +77,9 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 	}
 
 	testcases := []struct {
-		name      string
-		taxInfo   TaxInformation
-		taxResult TaxResult
+		name          string
+		taxInfo       TaxInformation
+		wantTaxResult TaxResult
 	}{
 		{
 			name: "EXP01: basic income, no WHT, no Allowance; expect tax",
@@ -90,7 +90,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 29_000.0, TaxRefund: 0.0},
+			wantTaxResult: TaxResult{Tax: 29_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "EXP02: Income and WHT, no Allowance; expect tax",
@@ -101,7 +101,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 0.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
+			wantTaxResult: TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "EXP03: Income and Allowance, no WHT; expect tax",
@@ -112,7 +112,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 19_000.0, TaxRefund: 0.0},
+			wantTaxResult: TaxResult{Tax: 19_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "One Allowance, tax payable > WHT; expect tax",
@@ -123,7 +123,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
+			wantTaxResult: TaxResult{Tax: 4_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "One Allowance, tax payable = WHT; expect tax=0",
@@ -134,7 +134,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			wantTaxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
 		},
 		{
 			name: "One Allowance, tax payable < WHT; expect taxRefund",
@@ -145,7 +145,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 200_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			wantTaxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 		{
 			name: "Multi Allowance, tax payable > WHT; expect tax",
@@ -159,7 +159,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
+			wantTaxResult: TaxResult{Tax: 9_000.0, TaxRefund: 0.0},
 		},
 		{
 			name: "Multi Allowance, tax payable = WHT; expect tax=0",
@@ -173,7 +173,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			wantTaxResult: TaxResult{Tax: 0.0, TaxRefund: 0.0},
 		},
 		{
 			name: "Multi Allowance, tax payable < WHT; expect taxRefund>0",
@@ -187,7 +187,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 					{Type: AllowanceTypeDonation, Amount: 70_000.0},
 				},
 			},
-			taxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
+			wantTaxResult: TaxResult{Tax: 0.0, TaxRefund: 10_000.0},
 		},
 	}
 
@@ -210,8 +210,8 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 			if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
 				t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 			}
-			assert.Equal(t, tc.taxResult.Tax, got.Tax)
-			assert.Equal(t, tc.taxResult.TaxRefund, got.TaxRefund)
+			assert.Equal(t, tc.wantTaxResult.Tax, got.Tax)
+			assert.Equal(t, tc.wantTaxResult.TaxRefund, got.TaxRefund)
 		})
 	}
 }
