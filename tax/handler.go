@@ -3,12 +3,13 @@ package tax
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"github.com/golfz/assessment-tax/deduction"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 type Storer interface {
-	GetDeduction() (Deduction, error)
+	GetDeduction() (deduction.Deduction, error)
 }
 
 type Handler struct {

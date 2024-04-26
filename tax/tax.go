@@ -29,12 +29,6 @@ type TaxLevel struct {
 	Tax   float64 `json:"tax"`
 }
 
-type Deduction struct {
-	Personal float64
-	KReceipt float64
-	Donation float64
-}
-
 type rate struct {
 	lowerBound  float64
 	upperBound  float64

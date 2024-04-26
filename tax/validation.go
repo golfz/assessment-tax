@@ -2,7 +2,6 @@ package tax
 
 import (
 	"errors"
-	"github.com/golfz/assessment-tax/rule"
 )
 
 func validateTaxInformation(info TaxInformation) (err error) {
@@ -24,20 +23,5 @@ func validateTaxInformation(info TaxInformation) (err error) {
 		}
 	}
 
-	return
-}
-
-func validateDeduction(deduction Deduction) (err error) {
-	if deduction.Personal <= rule.MinPersonalDeduction || deduction.Personal > rule.MaxPersonalDeduction {
-		err = errors.Join(err, ErrInvalidPersonalDeduction)
-	}
-
-	if deduction.KReceipt <= rule.MinKReceiptDeduction || deduction.KReceipt > rule.MaxKReceiptDeduction {
-		err = errors.Join(err, ErrInvalidKReceiptDeduction)
-	}
-
-	if deduction.Donation > rule.MaxDonationDeduction {
-		err = errors.Join(err, ErrInvalidDonationDeduction)
-	}
 	return
 }

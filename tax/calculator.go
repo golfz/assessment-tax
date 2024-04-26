@@ -2,6 +2,7 @@ package tax
 
 import (
 	"errors"
+	"github.com/golfz/assessment-tax/deduction"
 	"math"
 )
 
@@ -37,14 +38,14 @@ func calculateNetIncome(totalIncome, personalDeduction, totalAllowance float64) 
 	return result
 }
 
-func CalculateTax(info TaxInformation, deduction Deduction) (TaxResult, error) {
+func CalculateTax(info TaxInformation, deduction deduction.Deduction) (TaxResult, error) {
 	err := validateTaxInformation(info)
 	if err != nil {
 		err = errors.Join(err, ErrInvalidTaxInformation)
 		return TaxResult{}, err
 	}
 
-	err = validateDeduction(deduction)
+	err = deduction.Validate()
 	if err != nil {
 		err = errors.Join(err, ErrInvalidDeduction)
 		return TaxResult{}, err

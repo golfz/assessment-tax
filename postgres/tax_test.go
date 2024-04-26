@@ -4,7 +4,7 @@ package postgres
 
 import (
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/golfz/assessment-tax/tax"
+	"github.com/golfz/assessment-tax/deduction"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,7 +13,7 @@ func TestGetDeduction_Success(t *testing.T) {
 	testcases := []struct {
 		name string
 		rows *sqlmock.Rows
-		want tax.Deduction
+		want deduction.Deduction
 	}{
 		{
 			name: "found all deductions, expect deduction according to rows",
@@ -21,7 +21,7 @@ func TestGetDeduction_Success(t *testing.T) {
 				AddRow("personal", "60000.00").
 				AddRow("k-receipt", "50000.00").
 				AddRow("donation", "100000.00"),
-			want: tax.Deduction{
+			want: deduction.Deduction{
 				Personal: 60000.00,
 				KReceipt: 50000.00,
 				Donation: 100000.00,
@@ -30,7 +30,7 @@ func TestGetDeduction_Success(t *testing.T) {
 		{
 			name: "not found any deductions, expect deduction with zero value",
 			rows: sqlmock.NewRows([]string{"name", "amount"}),
-			want: tax.Deduction{
+			want: deduction.Deduction{
 				Personal: 0.0,
 				KReceipt: 0.0,
 				Donation: 0.0,
@@ -40,7 +40,7 @@ func TestGetDeduction_Success(t *testing.T) {
 			name: "found unknown deductions, expect deduction with zero value",
 			rows: sqlmock.NewRows([]string{"name", "amount"}).
 				AddRow("unknown", "10000.00"),
-			want: tax.Deduction{
+			want: deduction.Deduction{
 				Personal: 0.0,
 				KReceipt: 0.0,
 				Donation: 0.0,
@@ -50,7 +50,7 @@ func TestGetDeduction_Success(t *testing.T) {
 			name: "found some deductions, expect deduction according to row found and other with zero value",
 			rows: sqlmock.NewRows([]string{"name", "amount"}).
 				AddRow("k-receipt", "50000.00"),
-			want: tax.Deduction{
+			want: deduction.Deduction{
 				Personal: 0.0,
 				KReceipt: 50000.00,
 				Donation: 0.0,
@@ -70,11 +70,11 @@ func TestGetDeduction_Success(t *testing.T) {
 			pg := Postgres{Db: db}
 
 			// Act
-			deduction, err := pg.GetDeduction()
+			deductionData, err := pg.GetDeduction()
 
 			// Assert
 			assert.NoError(t, err)
-			assert.Equal(t, tc.want, deduction)
+			assert.Equal(t, tc.want, deductionData)
 		})
 	}
 }
@@ -89,7 +89,7 @@ func TestGetDeduction_Error(t *testing.T) {
 		defer db.Close()
 		mock.ExpectQuery(`SELECT name, amount FROM deductions`).WillReturnError(ErrCannotQueryDeduction)
 		pg := Postgres{Db: db}
-		wantDeduction := tax.Deduction{}
+		wantDeduction := deduction.Deduction{}
 
 		// Act
 		gotDeduction, err := pg.GetDeduction()
@@ -113,7 +113,7 @@ func TestGetDeduction_Error(t *testing.T) {
 			AddRow("donation", "100000.00")
 		mock.ExpectQuery(`SELECT name, amount FROM deductions`).WillReturnRows(rows)
 		pg := Postgres{Db: db}
-		wantDeduction := tax.Deduction{}
+		wantDeduction := deduction.Deduction{}
 
 		// Act
 		gotDeduction, err := pg.GetDeduction()
