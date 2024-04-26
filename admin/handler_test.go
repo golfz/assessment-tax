@@ -2,6 +2,7 @@ package admin
 
 import (
 	"encoding/json"
+	"github.com/golfz/assessment-tax/deduction"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -67,21 +68,143 @@ func setup(method, url string, body interface{}) (*httptest.ResponseRecorder, ec
 }
 
 func TestSetPersonalDeductionHandler_Success(t *testing.T) {
-	// Arrange
-	amount := 70_000.0
-	rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: amount})
-	mock.ExpectToCall(MethodSetPersonalDeduction)
-
-	// Act
-	err := h.SetPersonalDeductionHandler(c)
-
-	// Assert
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
+	testcases := []struct {
+		name   string
+		amount float64
+	}{
+		{
+			name:   "EXP05: setting personal deduction",
+			amount: 70_000.0,
+		},
+		{
+			name:   "setting with minimum personal deduction",
+			amount: deduction.MinPersonalDeduction + 1,
+		},
+		{
+			name:   "setting with maximum personal deduction",
+			amount: deduction.MaxPersonalDeduction,
+		},
 	}
-	if rec.Code != http.StatusOK {
-		t.Errorf("expected status code %d, got %d", http.StatusOK, rec.Code)
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})
+			mock.ExpectToCall(MethodSetPersonalDeduction)
+
+			// Act
+			err := h.SetPersonalDeductionHandler(c)
+
+			// Assert
+			if err != nil {
+				t.Errorf("expected no error, got %v", err)
+			}
+			if rec.Code != http.StatusOK {
+				t.Errorf("expected status code %d, got %d", http.StatusOK, rec.Code)
+			}
+			mock.Verify(t)
+			assert.Equal(t, tc.amount, mock.whatIsAmount)
+		})
 	}
-	mock.Verify(t)
-	assert.Equal(t, amount, mock.whatIsAmount)
+}
+
+func TestSetPersonalDeductionHandler_Error(t *testing.T) {
+	t.Run("no content-type header", func(t *testing.T) {
+		// Arrange
+		body := struct{ Field string }{Field: "invalid"}
+		resp, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", body)
+		c.Request().Header.Set(echo.HeaderContentType, "")
+
+		// Act
+		err := h.SetPersonalDeductionHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrReadingRequestBody.Error(), got.Message)
+	})
+
+	t.Run("invalid input", func(t *testing.T) {
+		// Arrange
+		body := struct{ Amount float64 }{Amount: -1}
+		resp, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", body)
+
+		// Act
+		err := h.SetPersonalDeductionHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrInvalidInput.Error(), got.Message)
+	})
+
+	t.Run("SetPersonalDeduction() error", func(t *testing.T) {
+		// Arrange
+		body := struct{ Amount float64 }{Amount: 70_000}
+		resp, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", body)
+		mock.err = ErrSettingPersonalDeduction
+
+		// Act
+		err := h.SetPersonalDeductionHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrSettingPersonalDeduction.Error(), got.Message)
+	})
+}
+
+func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
+	testcases := []struct {
+		name   string
+		amount float64
+	}{
+		{
+			name:   "amount less than minimum personal deduction; expected error",
+			amount: deduction.MinPersonalDeduction - 1,
+		},
+		{
+			name:   "amount equal minimum personal deduction boundary; expected error",
+			amount: deduction.MinPersonalDeduction,
+		},
+		{
+			name:   "amount more than maximum personal deduction",
+			amount: deduction.MaxPersonalDeduction + 1,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})
+
+			// Act
+			err := h.SetPersonalDeductionHandler(c)
+
+			// Assert
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+			var got Err
+			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+			}
+			assert.NotEmpty(t, got.Message)
+			assert.Equal(t, ErrInvalidPersonalDeduction.Error(), got.Message)
+		})
+	}
 }

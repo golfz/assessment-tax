@@ -2,6 +2,7 @@ package admin
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/golfz/assessment-tax/deduction"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -46,6 +47,12 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 	if err := validate.Struct(input); err != nil {
 		c.Logger().Printf("error validating request body: %v", err)
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInput.Error()})
+	}
+
+	err = deduction.ValidatePersonalDeduction(input.Amount)
+	if err != nil {
+		c.Logger().Printf("error validating personal deduction: %v", err)
+		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidPersonalDeduction.Error()})
 	}
 
 	err = h.store.SetPersonalDeduction(input.Amount)
