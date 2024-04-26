@@ -21,3 +21,10 @@ var (
 var (
 	ErrInvalidDeduction = errors.New("invalid deduction")
 )
+
+var (
+	ErrUploadingFile = errors.New("cannot uploading file")
+	ErrReadingFile   = errors.New("cannot reading file")
+	ErrReadingCSV    = errors.New("cannot reading csv")
+	ErrParsingData   = errors.New("cannot parsing data")
+)

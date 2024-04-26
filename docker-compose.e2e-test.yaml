@@ -12,6 +12,7 @@ services:
     command:
       run /postman/ktax.postman_collection.json
       -e /postman/ktax-e2e.postman_environment.json
+      --working-dir /postman/files
     depends_on:
       - goapp
     networks:
