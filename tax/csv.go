@@ -5,8 +5,8 @@ import (
 	"strconv"
 )
 
-func CalculateTaxFromCSV(records [][]string, deductionData deduction.Deduction) (CSVResponse, error) {
-	result := CSVResponse{}
+func CalculateTaxFromCSV(records [][]string, deductionData deduction.Deduction) (CsvTaxResponse, error) {
+	result := CsvTaxResponse{}
 
 	for i, row := range records {
 		if i == 0 {
@@ -20,19 +20,19 @@ func CalculateTaxFromCSV(records [][]string, deductionData deduction.Deduction) 
 			case 0:
 				totalIncome, err := strconv.ParseFloat(colVal, 64)
 				if err != nil {
-					return CSVResponse{}, ErrParsingData
+					return CsvTaxResponse{}, ErrParsingData
 				}
 				taxInfo.TotalIncome = totalIncome
 			case 1:
 				wht, err := strconv.ParseFloat(colVal, 64)
 				if err != nil {
-					return CSVResponse{}, ErrParsingData
+					return CsvTaxResponse{}, ErrParsingData
 				}
 				taxInfo.WHT = wht
 			case 2:
 				donation, err := strconv.ParseFloat(colVal, 64)
 				if err != nil {
-					return CSVResponse{}, ErrParsingData
+					return CsvTaxResponse{}, ErrParsingData
 				}
 				taxInfo.Allowances = []Allowance{
 					{Type: AllowanceTypeDonation, Amount: donation},
@@ -42,10 +42,10 @@ func CalculateTaxFromCSV(records [][]string, deductionData deduction.Deduction) 
 
 		taxResult, err := CalculateTax(taxInfo, deductionData)
 		if err != nil {
-			return CSVResponse{}, ErrCalculatingTax
+			return CsvTaxResponse{}, ErrCalculatingTax
 		}
 
-		result.Taxes = append(result.Taxes, CSVTaxResult{
+		result.Taxes = append(result.Taxes, CsvTaxRecord{
 			TotalIncome: taxInfo.TotalIncome,
 			Tax:         taxResult.Tax,
 			TaxRefund:   taxResult.TaxRefund,
