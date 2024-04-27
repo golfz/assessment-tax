@@ -65,3 +65,22 @@ func TestSetKReceiptDeduction_Success(t *testing.T) {
 	assert.NoError(t, err)
 	_ = mock.ExpectationsWereMet()
 }
+
+func TestSetKReceiptDeduction_Error(t *testing.T) {
+	// Arrange
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	mock.ExpectExec("^UPDATE (.+)").WillReturnError(errors.New("unexpected error"))
+	pg := Postgres{DB: db}
+
+	// Act
+	err = pg.SetKReceiptDeduction(60000.00)
+
+	// Assert
+	assert.Error(t, err)
+	_ = mock.ExpectationsWereMet()
+}
