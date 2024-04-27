@@ -174,6 +174,50 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/tax/calculations/upload-csv": {
+            "post": {
+                "description": "Upload csv file and calculate tax",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tax"
+                ],
+                "summary": "Upload csv file and calculate tax",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "this is a test file",
+                        "name": "taxFile",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tax.CsvTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -232,6 +276,31 @@ const docTemplate = `{
                 "AllowanceTypeDonation",
                 "AllowanceTypeKReceipt"
             ]
+        },
+        "tax.CsvTaxRecord": {
+            "type": "object",
+            "properties": {
+                "tax": {
+                    "type": "number"
+                },
+                "taxRefund": {
+                    "type": "number"
+                },
+                "totalIncome": {
+                    "type": "number"
+                }
+            }
+        },
+        "tax.CsvTaxResponse": {
+            "type": "object",
+            "properties": {
+                "taxes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tax.CsvTaxRecord"
+                    }
+                }
+            }
         },
         "tax.Err": {
             "type": "object",

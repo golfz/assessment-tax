@@ -37,6 +37,22 @@ definitions:
     x-enum-varnames:
     - AllowanceTypeDonation
     - AllowanceTypeKReceipt
+  tax.CsvTaxRecord:
+    properties:
+      tax:
+        type: number
+      taxRefund:
+        type: number
+      totalIncome:
+        type: number
+    type: object
+  tax.CsvTaxResponse:
+    properties:
+      taxes:
+        items:
+          $ref: '#/definitions/tax.CsvTaxRecord'
+        type: array
+    type: object
   tax.Err:
     properties:
       message:
@@ -182,6 +198,35 @@ paths:
           schema:
             $ref: '#/definitions/tax.Err'
       summary: Calculate tax
+      tags:
+      - tax
+  /tax/calculations/upload-csv:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload csv file and calculate tax
+      parameters:
+      - description: this is a test file
+        in: formData
+        name: taxFile
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tax.CsvTaxResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tax.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tax.Err'
+      summary: Upload csv file and calculate tax
       tags:
       - tax
 securityDefinitions:
