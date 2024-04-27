@@ -26,7 +26,7 @@ import (
 
 // @title		K-Tax API
 // @version		1.0
-// @description Sophisticated K-Tax API
+// @description This is an API for K-Tax.
 // @host		localhost:8080
 // @BasePath    /
 // @securityDefinitions.basic BasicAuth

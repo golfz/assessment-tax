@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Sophisticated K-Tax API",
+        "description": "This is an API for K-Tax.",
         "title": "K-Tax API",
         "contact": {},
         "version": "1.0"

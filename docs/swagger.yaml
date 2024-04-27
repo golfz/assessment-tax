@@ -78,7 +78,7 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: Sophisticated K-Tax API
+  description: This is an API for K-Tax.
   title: K-Tax API
   version: "1.0"
 paths:

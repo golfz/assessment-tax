@@ -306,7 +306,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "K-Tax API",
-	Description:      "Sophisticated K-Tax API",
+	Description:      "This is an API for K-Tax.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
