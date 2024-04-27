@@ -232,6 +232,10 @@ func TestSetKReceiptDeductionHandler_Success(t *testing.T) {
 			name:   "setting with minimum k-receipt deduction",
 			amount: deduction.MinKReceiptDeduction + 1,
 		},
+		{
+			name:   "setting with maximum k-receipt deduction",
+			amount: deduction.MaxKReceiptDeduction,
+		},
 	}
 
 	for _, tc := range testCases {
