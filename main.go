@@ -26,9 +26,10 @@ import (
 
 // @title		K-Tax API
 // @version		1.0
-// @description Sophisticated K-Tax API
+// @description This is an API for K-Tax.
 // @host		localhost:8080
 // @BasePath    /
+// @securityDefinitions.basic BasicAuth
 func main() {
 	cfg := config.NewWith(os.Getenv)
 
@@ -51,6 +52,7 @@ func main() {
 
 	hAdmin := admin.New(pg)
 	a.POST("/deductions/personal", hAdmin.SetPersonalDeductionHandler)
+	a.POST("/deductions/k-receipt", hAdmin.SetKReceiptDeductionHandler)
 
 	// monitor shutdown signal
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

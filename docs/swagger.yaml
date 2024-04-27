@@ -11,6 +11,11 @@ definitions:
         minimum: 0
         type: number
     type: object
+  admin.KReceiptDeduction:
+    properties:
+      kReceipt:
+        type: number
+    type: object
   admin.PersonalDeduction:
     properties:
       personalDeduction:
@@ -32,6 +37,22 @@ definitions:
     x-enum-varnames:
     - AllowanceTypeDonation
     - AllowanceTypeKReceipt
+  tax.CsvTaxRecord:
+    properties:
+      tax:
+        type: number
+      taxRefund:
+        type: number
+      totalIncome:
+        type: number
+    type: object
+  tax.CsvTaxResponse:
+    properties:
+      taxes:
+        items:
+          $ref: '#/definitions/tax.CsvTaxRecord'
+        type: array
+    type: object
   tax.Err:
     properties:
       message:
@@ -73,10 +94,46 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: Sophisticated K-Tax API
+  description: This is an API for K-Tax.
   title: K-Tax API
   version: "1.0"
 paths:
+  /admin/deductions/k-receipt:
+    post:
+      consumes:
+      - application/json
+      description: Admin set k-receipt deduction
+      parameters:
+      - description: Amount to set personal deduction
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/admin.Input'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.KReceiptDeduction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/admin.Err'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/admin.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/admin.Err'
+      security:
+      - BasicAuth: []
+      summary: Admin set k-receipt deduction
+      tags:
+      - admin
   /admin/deductions/personal:
     post:
       consumes:
@@ -100,10 +157,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/admin.Err'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/admin.Err'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/admin.Err'
+      security:
+      - BasicAuth: []
       summary: Admin set personal deduction
       tags:
       - admin
@@ -137,4 +200,36 @@ paths:
       summary: Calculate tax
       tags:
       - tax
+  /tax/calculations/upload-csv:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload csv file and calculate tax
+      parameters:
+      - description: this is a test file
+        in: formData
+        name: taxFile
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tax.CsvTaxResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tax.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tax.Err'
+      summary: Upload csv file and calculate tax
+      tags:
+      - tax
+securityDefinitions:
+  BasicAuth:
+    type: basic
 swagger: "2.0"

@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Sophisticated K-Tax API",
+        "description": "This is an API for K-Tax.",
         "title": "K-Tax API",
         "contact": {},
         "version": "1.0"
@@ -9,8 +9,70 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/admin/deductions/k-receipt": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Admin set k-receipt deduction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Admin set k-receipt deduction",
+                "parameters": [
+                    {
+                        "description": "Amount to set personal deduction",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.Input"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin.KReceiptDeduction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/deductions/personal": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Admin set personal deduction",
                 "consumes": [
                     "application/json"
@@ -42,6 +104,12 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/admin.Err"
                         }
@@ -100,6 +168,50 @@
                     }
                 }
             }
+        },
+        "/tax/calculations/upload-csv": {
+            "post": {
+                "description": "Upload csv file and calculate tax",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tax"
+                ],
+                "summary": "Upload csv file and calculate tax",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "this is a test file",
+                        "name": "taxFile",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tax.CsvTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -117,6 +229,14 @@
                 "amount": {
                     "type": "number",
                     "minimum": 0
+                }
+            }
+        },
+        "admin.KReceiptDeduction": {
+            "type": "object",
+            "properties": {
+                "kReceipt": {
+                    "type": "number"
                 }
             }
         },
@@ -150,6 +270,31 @@
                 "AllowanceTypeDonation",
                 "AllowanceTypeKReceipt"
             ]
+        },
+        "tax.CsvTaxRecord": {
+            "type": "object",
+            "properties": {
+                "tax": {
+                    "type": "number"
+                },
+                "taxRefund": {
+                    "type": "number"
+                },
+                "totalIncome": {
+                    "type": "number"
+                }
+            }
+        },
+        "tax.CsvTaxResponse": {
+            "type": "object",
+            "properties": {
+                "taxes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tax.CsvTaxRecord"
+                    }
+                }
+            }
         },
         "tax.Err": {
             "type": "object",
@@ -208,6 +353,11 @@
                     "type": "number"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
         }
     }
 }

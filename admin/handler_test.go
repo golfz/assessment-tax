@@ -16,6 +16,7 @@ import (
 
 const (
 	MethodSetPersonalDeduction = "SetPersonalDeduction"
+	MethodSetKReceiptDeduction = "SetKReceiptDeduction"
 )
 
 type mockAdminStorer struct {
@@ -32,6 +33,12 @@ func NewMockTaxStorer() *mockAdminStorer {
 
 func (m *mockAdminStorer) SetPersonalDeduction(amount float64) error {
 	m.methodToCall[MethodSetPersonalDeduction] = true
+	m.whatIsAmount = amount
+	return m.err
+}
+
+func (m *mockAdminStorer) SetKReceiptDeduction(amount float64) error {
+	m.methodToCall[MethodSetKReceiptDeduction] = true
 	m.whatIsAmount = amount
 	return m.err
 }
@@ -208,6 +215,153 @@ func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
 			}
 			assert.NotEmpty(t, got.Message)
 			assert.Equal(t, ErrInvalidPersonalDeduction.Error(), got.Message)
+		})
+	}
+}
+
+func TestSetKReceiptDeductionHandler_Success(t *testing.T) {
+	testCases := []struct {
+		name   string
+		amount float64
+	}{
+		{
+			name:   "EXP08: setting k-receipt deduction",
+			amount: 70_000.0,
+		},
+		{
+			name:   "setting with minimum k-receipt deduction",
+			amount: deduction.MinKReceiptDeduction + 1,
+		},
+		{
+			name:   "setting with maximum k-receipt deduction",
+			amount: deduction.MaxKReceiptDeduction,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+			mock.ExpectToCall(MethodSetKReceiptDeduction)
+
+			// Act
+			err := h.SetKReceiptDeductionHandler(c)
+
+			// Assert
+			mock.Verify(t)
+			assert.Equal(t, tc.amount, mock.whatIsAmount)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			var got KReceiptDeduction
+			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+			}
+			assert.Equal(t, tc.amount, got.KReceiptDeduction)
+		})
+	}
+}
+
+func TestSetKReceiptDeductionHandler_Error(t *testing.T) {
+	t.Run("no content-type header", func(t *testing.T) {
+		// Arrange
+		body := struct{ Field string }{Field: "invalid"}
+		resp, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", body)
+		c.Request().Header.Set(echo.HeaderContentType, "")
+
+		// Act
+		err := h.SetKReceiptDeductionHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrReadingRequestBody.Error(), got.Message)
+	})
+
+	t.Run("invalid input", func(t *testing.T) {
+		// Arrange
+		body := struct{ Amount float64 }{Amount: -1}
+		resp, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", body)
+
+		// Act
+		err := h.SetKReceiptDeductionHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrInvalidInput.Error(), got.Message)
+	})
+
+	t.Run("call SetKReceiptDeduction() error", func(t *testing.T) {
+		// Arrange
+		body := struct{ Amount float64 }{Amount: 70_000}
+		resp, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", body)
+		mock.err = ErrInvalidKReceiptDeduction
+
+		// Act
+		err := h.SetKReceiptDeductionHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrSettingKReceiptDeduction.Error(), got.Message)
+	})
+}
+
+func TestSetKReceiptDeductionHandler_ValidateAmount_Error(t *testing.T) {
+	testCases := []struct {
+		name      string
+		amount    float64
+		wantError error
+	}{
+		{
+			name:      "amount less than minimum k-receipt deduction; expected error",
+			amount:    deduction.MinKReceiptDeduction - 1,
+			wantError: ErrInvalidInput,
+		},
+		{
+			name:      "amount equal minimum k-receipt deduction boundary; expected error",
+			amount:    deduction.MinKReceiptDeduction,
+			wantError: ErrInvalidKReceiptDeduction,
+		},
+		{
+			name:      "amount more than maximum k-receipt deduction",
+			amount:    deduction.MaxKReceiptDeduction + 1,
+			wantError: ErrInvalidKReceiptDeduction,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+
+			// Act
+			err := h.SetKReceiptDeductionHandler(c)
+
+			// Assert
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+			var got Err
+			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+			}
+			assert.NotEmpty(t, got.Message)
+			assert.Equal(t, tc.wantError.Error(), got.Message)
 		})
 	}
 }

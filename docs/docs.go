@@ -15,8 +15,70 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/deductions/k-receipt": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Admin set k-receipt deduction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Admin set k-receipt deduction",
+                "parameters": [
+                    {
+                        "description": "Amount to set personal deduction",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.Input"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin.KReceiptDeduction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/deductions/personal": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Admin set personal deduction",
                 "consumes": [
                     "application/json"
@@ -48,6 +110,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/admin.Err"
                         }
@@ -106,6 +174,50 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/tax/calculations/upload-csv": {
+            "post": {
+                "description": "Upload csv file and calculate tax",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tax"
+                ],
+                "summary": "Upload csv file and calculate tax",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "this is a test file",
+                        "name": "taxFile",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tax.CsvTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/tax.Err"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -123,6 +235,14 @@ const docTemplate = `{
                 "amount": {
                     "type": "number",
                     "minimum": 0
+                }
+            }
+        },
+        "admin.KReceiptDeduction": {
+            "type": "object",
+            "properties": {
+                "kReceipt": {
+                    "type": "number"
                 }
             }
         },
@@ -156,6 +276,31 @@ const docTemplate = `{
                 "AllowanceTypeDonation",
                 "AllowanceTypeKReceipt"
             ]
+        },
+        "tax.CsvTaxRecord": {
+            "type": "object",
+            "properties": {
+                "tax": {
+                    "type": "number"
+                },
+                "taxRefund": {
+                    "type": "number"
+                },
+                "totalIncome": {
+                    "type": "number"
+                }
+            }
+        },
+        "tax.CsvTaxResponse": {
+            "type": "object",
+            "properties": {
+                "taxes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tax.CsvTaxRecord"
+                    }
+                }
+            }
         },
         "tax.Err": {
             "type": "object",
@@ -215,6 +360,11 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
     }
 }`
 
@@ -225,7 +375,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "K-Tax API",
-	Description:      "Sophisticated K-Tax API",
+	Description:      "This is an API for K-Tax.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -29,7 +29,7 @@ docker-build:
 	docker build -t ktaxes .
 
 docker-run-image:
-	docker run -p 8080:8080 -e DATABASE_URL="host=postgres port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" ktaxes
+	docker run -p 8080:8080 -e PORT=8080 -e DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" -e ADMIN_USERNAME="adminTax" -e ADMIN_PASSWORD="admin!" ktaxes
 
 run-db:
 	docker-compose -f docker-compose.yaml down && \

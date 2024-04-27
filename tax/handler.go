@@ -68,6 +68,18 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+// UploadCSVHandler
+//
+//		@Summary		Upload csv file and calculate tax
+//		@Description	Upload csv file and calculate tax
+//		@Tags			tax
+//	    @Accept			multipart/form-data
+//	    @Param			taxFile	formData	file			true	"this is a test file"
+//		@Produce		json
+//		@Success		200	            {object}	CsvTaxResponse
+//		@Failure		400	            {object}	Err
+//		@Failure		500	            {object}	Err
+//		@Router			/tax/calculations/upload-csv [post]
 func (h *Handler) UploadCSVHandler(c echo.Context) error {
 	file, err := c.FormFile("taxFile")
 	if err != nil {
