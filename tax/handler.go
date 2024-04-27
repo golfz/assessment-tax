@@ -69,17 +69,17 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 }
 
 func (h *Handler) UploadCSVHandler(c echo.Context) error {
-	formFile, err := c.FormFile("taxFile")
+	file, err := c.FormFile("taxFile")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrUploadingFile.Error()})
 	}
-	file, err := formFile.Open()
+	src, err := file.Open()
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingFile.Error()})
+		return c.JSON(http.StatusBadRequest, Err{Message: ErrUploadingFile.Error()})
 	}
-	defer file.Close()
+	defer src.Close()
 
-	records, err := readCSV(file)
+	records, err := readCSV(src)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingCSV.Error()})
 	}
@@ -91,12 +91,8 @@ func (h *Handler) UploadCSVHandler(c echo.Context) error {
 
 	result, err := CalculateTaxFromCSV(records, deductionData)
 	if err != nil {
-		if errors.Is(err, ErrParsingData) {
-			return c.JSON(http.StatusBadRequest, Err{Message: ErrParsingData.Error()})
-		}
-		if errors.Is(err, ErrCalculatingTax) {
-			return c.JSON(http.StatusInternalServerError, Err{Message: ErrCalculatingTax.Error()})
-		}
+		return c.JSON(http.StatusInternalServerError, Err{Message: ErrCalculatingTax.Error()})
+
 	}
 
 	return c.JSON(http.StatusOK, result)

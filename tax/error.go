@@ -24,7 +24,6 @@ var (
 
 var (
 	ErrUploadingFile    = errors.New("cannot uploading file")
-	ErrReadingFile      = errors.New("cannot reading file")
 	ErrReadingCSV       = errors.New("cannot reading csv")
 	ErrParsingData      = errors.New("cannot parsing data")
 	ErrInvalidCSVHeader = errors.New("invalid csv header")

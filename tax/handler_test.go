@@ -3,12 +3,14 @@
 package tax
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/golfz/assessment-tax/deduction"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -448,5 +450,251 @@ func TestCalculateTaxHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.Equal(t, ErrInvalidTaxInformation.Error(), got.Message)
+	})
+}
+
+func TestUploadCSVHandler_Success(t *testing.T) {
+	// Arrange
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+	data := "totalIncome,wht,donation" + "\n"
+	data += "500000,0,0" + "\n"
+	data += "600000,40000,20000" + "\n"
+	data += "750000,50000,15000"
+	part.Write([]byte(data))
+	writer.Close()
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	mock := NewMockTaxStorer()
+	mock.ExpectToCall("UploadCSV")
+	mock.deduction = deduction.Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	// Act
+	h := New(mock)
+	err := h.UploadCSVHandler(c)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var gotCsvTaxResponse CsvTaxResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &gotCsvTaxResponse); err != nil {
+		t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+	}
+	assert.Equal(t, 3, len(gotCsvTaxResponse.Taxes))
+	assert.Equal(t, 500000.0, gotCsvTaxResponse.Taxes[0].TotalIncome)
+	assert.Equal(t, 29000.0, gotCsvTaxResponse.Taxes[0].Tax)
+}
+
+func TestUploadCSVHandler_Error(t *testing.T) {
+	t.Run("wrong form-field expect 400 with ErrUploadingFile", func(t *testing.T) {
+		// Arrange
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("wrongField", "taxes.csv")
+		data := "totalIncome,wht,donation" + "\n"
+		data += "500000,0,0"
+		part.Write([]byte(data))
+		writer.Close()
+
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		// Act
+		h := New(NewMockTaxStorer())
+		err := h.UploadCSVHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		var got Err
+		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrUploadingFile.Error(), got.Message)
+	})
+
+	t.Run("no content-type expect 400 with ErrUploadingFile", func(t *testing.T) {
+		// Arrange
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+		data := "totalIncome,wht,donation" + "\n"
+		data += "500000,0,0"
+		part.Write([]byte(data))
+		writer.Close()
+
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		// Act
+		h := New(NewMockTaxStorer())
+		err := h.UploadCSVHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		var got Err
+		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrUploadingFile.Error(), got.Message)
+	})
+
+	t.Run("invalid csv format expect 400 with ErrReadingCSV", func(t *testing.T) {
+		// Arrange
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+		part.Write([]byte("not csv format"))
+		writer.Close()
+
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		// Act
+		h := New(NewMockTaxStorer())
+		err := h.UploadCSVHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		var got Err
+		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrReadingCSV.Error(), got.Message)
+	})
+
+	t.Run("get deduction error expect 500 with ErrGettingDeduction", func(t *testing.T) {
+		// Arrange
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+		data := "totalIncome,wht,donation" + "\n"
+		data += "500000,0,0" + "\n"
+		data += "600000,40000,20000" + "\n"
+		data += "750000,50000,15000"
+		part.Write([]byte(data))
+		writer.Close()
+
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		mock := NewMockTaxStorer()
+		mock.ExpectToCall("UploadCSV")
+		mock.err = ErrGettingDeduction
+
+		// Act
+		h := New(mock)
+		err := h.UploadCSVHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+
+		var gotErr Err
+		if err := json.Unmarshal(rec.Body.Bytes(), &gotErr); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+		}
+		assert.Equal(t, ErrGettingDeduction.Error(), gotErr.Message)
+	})
+
+	t.Run("invalid parsing csv expect 400 with ErrReadingCSV", func(t *testing.T) {
+		// Arrange
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+		data := "totalIncome,wht,donation" + "\n"
+		data += "ABC,0,0"
+		part.Write([]byte(data))
+		writer.Close()
+
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		mock := NewMockTaxStorer()
+		mock.ExpectToCall("UploadCSV")
+		mock.deduction = deduction.Deduction{
+			Personal: 60_000.0,
+			KReceipt: 50_000.0,
+			Donation: 100_000.0,
+		}
+
+		// Act
+		h := New(mock)
+		err := h.UploadCSVHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+		var gotErr Err
+		if err := json.Unmarshal(rec.Body.Bytes(), &gotErr); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+		}
+		assert.Equal(t, ErrReadingCSV.Error(), gotErr.Message)
+	})
+
+	t.Run("zero-deduction expect 500 with ErrCalculatingTax", func(t *testing.T) {
+		// Arrange
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+		data := "totalIncome,wht,donation" + "\n"
+		data += "500_000,0,0"
+		part.Write([]byte(data))
+		writer.Close()
+
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		mock := NewMockTaxStorer()
+		mock.ExpectToCall(MethodGetDeduction)
+		mock.deduction = deduction.Deduction{}
+
+		// Act
+		h := New(mock)
+		err := h.UploadCSVHandler(c)
+
+		// Assert
+		mock.Verify(t)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+
+		var gotErr Err
+		if err := json.Unmarshal(rec.Body.Bytes(), &gotErr); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+		}
+		assert.Equal(t, ErrCalculatingTax.Error(), gotErr.Message)
 	})
 }
