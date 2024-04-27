@@ -4,16 +4,16 @@ quality:
 	golangci-lint run
 
 test-unit:
-	go test ./... -tags=unit
+	go clean -testcache && go test ./... -tags=unit
 
 test-unit-v:
-	go test -v ./... -tags=unit
+	go clean -testcache && go test -v ./... -tags=unit
 
 test-cover:
-	go test -tags=unit -cover ./...
+	go clean -testcache && go test -tags=unit -cover ./...
 
 test-cover-html:
-	go test -tags=unit -coverprofile=c.out ./...
+	go clean -testcache && go test -tags=unit -coverprofile=c.out ./...
 	go tool cover -html=c.out
 	rm c.out
 
