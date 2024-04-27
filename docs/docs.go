@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/admin/deductions/k-receipt": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Admin set k-receipt deduction",
                 "consumes": [
                     "application/json"
@@ -52,6 +57,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/admin.Err"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -63,6 +74,11 @@ const docTemplate = `{
         },
         "/admin/deductions/personal": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Admin set personal deduction",
                 "consumes": [
                     "application/json"
@@ -94,6 +110,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/admin.Err"
                         }
@@ -268,6 +290,11 @@ const docTemplate = `{
                     "type": "number"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
         }
     }
 }`

@@ -29,6 +29,7 @@ import (
 // @description Sophisticated K-Tax API
 // @host		localhost:8080
 // @BasePath    /
+// @securityDefinitions.basic BasicAuth
 func main() {
 	cfg := config.NewWith(os.Getenv)
 

@@ -26,16 +26,18 @@ type Err struct {
 
 // SetPersonalDeductionHandler
 //
-//		@Summary		Admin set personal deduction
-//		@Description	Admin set personal deduction
-//		@Tags			admin
-//	    @Accept			json
-//	    @Param			amount		body		Input	true		"Amount to set personal deduction"
-//		@Produce		json
-//		@Success		200	            {object}	PersonalDeduction
-//		@Failure		400	            {object}	Err
-//		@Failure		500	            {object}	Err
-//		@Router			/admin/deductions/personal [post]
+//	     @Security       BasicAuth
+//			@Summary		Admin set personal deduction
+//			@Description	Admin set personal deduction
+//			@Tags			admin
+//		    @Accept			json
+//		    @Param			amount		body		Input	true		"Amount to set personal deduction"
+//			@Produce		json
+//			@Success		200	            {object}	PersonalDeduction
+//			@Failure		400	            {object}	Err
+//			@Failure		401	            {object}	Err
+//			@Failure		500	            {object}	Err
+//			@Router			/admin/deductions/personal [post]
 func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 	var input Input
 	err := c.Bind(&input)
@@ -67,17 +69,18 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 
 // SetKReceiptDeductionHandler
 //
-//			@Summary		Admin set k-receipt deduction
-//			@Description	Admin set k-receipt deduction
-//			@Tags			admin
-//		    @Accept			json
-//		    @Param			amount		body		Input	true		"Amount to set personal deduction"
-//			@Produce		json
-//			@Success		200	            {object}	KReceiptDeduction
-//			@Failure		400	            {object}	Err
-//			@Failure		500	            {object}	Err
-//	        @securityDefinitions.basic BasicAuth
-//			@Router			/admin/deductions/k-receipt [post]
+//	         @Security       BasicAuth
+//				@Summary		Admin set k-receipt deduction
+//				@Description	Admin set k-receipt deduction
+//				@Tags			admin
+//			    @Accept			json
+//			    @Param			amount		body		Input	true		"Amount to set personal deduction"
+//				@Produce		json
+//				@Success		200	            {object}	KReceiptDeduction
+//				@Failure		400	            {object}	Err
+//				@Failure		401	            {object}	Err
+//				@Failure		500	            {object}	Err
+//				@Router			/admin/deductions/k-receipt [post]
 func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
 	var input Input
 	err := c.Bind(&input)

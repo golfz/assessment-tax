@@ -105,10 +105,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/admin.Err'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/admin.Err'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/admin.Err'
+      security:
+      - BasicAuth: []
       summary: Admin set k-receipt deduction
       tags:
       - admin
@@ -135,10 +141,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/admin.Err'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/admin.Err'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/admin.Err'
+      security:
+      - BasicAuth: []
       summary: Admin set personal deduction
       tags:
       - admin
@@ -172,4 +184,7 @@ paths:
       summary: Calculate tax
       tags:
       - tax
+securityDefinitions:
+  BasicAuth:
+    type: basic
 swagger: "2.0"
