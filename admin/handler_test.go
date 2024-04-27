@@ -338,6 +338,11 @@ func TestSetKReceiptDeductionHandler_ValidateAmount_Error(t *testing.T) {
 			amount:    deduction.MinKReceiptDeduction,
 			wantError: ErrInvalidKReceiptDeduction,
 		},
+		{
+			name:      "amount more than maximum k-receipt deduction",
+			amount:    deduction.MaxKReceiptDeduction + 1,
+			wantError: ErrInvalidKReceiptDeduction,
+		},
 	}
 
 	for _, tc := range testCases {
