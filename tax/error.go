@@ -8,7 +8,6 @@ var (
 	ErrCalculatingTax     = errors.New("error calculating tax")
 )
 
-// Invalid tax information errors
 var (
 	ErrInvalidTaxInformation = errors.New("invalid tax information")
 
@@ -17,7 +16,13 @@ var (
 	ErrInvalidAllowanceAmount = errors.New("allowance amount must be greater than or equal to 0")
 )
 
-// Deduction errors
 var (
 	ErrInvalidDeduction = errors.New("invalid deduction")
+)
+
+var (
+	ErrUploadingFile    = errors.New("cannot uploading file")
+	ErrReadingCSV       = errors.New("cannot reading csv")
+	ErrParsingData      = errors.New("cannot parsing data")
+	ErrInvalidCSVHeader = errors.New("invalid csv header")
 )

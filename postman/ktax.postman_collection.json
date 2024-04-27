@@ -492,8 +492,8 @@
 									"    pm.expect(responseData).to.be.an('object');\r",
 									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
 									"    \r",
-									"    responseData.taxLevel.forEach((tax) => {\r",
-									"        if (tax.level === \"2\") {\r",
+									"    responseData.taxLevel.forEach((tax,index) => {\r",
+									"        if (index === 1) {\r",
 									"            pm.expect(tax.tax).to.equal(19000);\r",
 									"        }\r",
 									"    });\r",
@@ -610,20 +610,20 @@
 									"    pm.expect(responseData).to.be.an('object');\r",
 									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
 									"    \r",
-									"    responseData.taxLevel.forEach((tax) => {\r",
-									"        if (tax.level === \"1\") {\r",
+									"    responseData.taxLevel.forEach((tax,index) => {\r",
+									"        if (index === 0) {\r",
 									"            pm.expect(tax.tax).to.equal(0);\r",
 									"        }\r",
-									"        if (tax.level === \"2\") {\r",
+									"        if (index === 1) {\r",
 									"            pm.expect(tax.tax).to.equal(35000);\r",
 									"        }\r",
-									"        if (tax.level === \"3\") {\r",
+									"        if (index === 2) {\r",
 									"            pm.expect(tax.tax).to.equal(75000);\r",
 									"        }\r",
-									"        if (tax.level === \"4\") {\r",
+									"        if (index === 3) {\r",
 									"            pm.expect(tax.tax).to.equal(200000);\r",
 									"        }\r",
-									"        if (tax.level === \"5\") {\r",
+									"        if (index === 4) {\r",
 									"            pm.expect(tax.tax).to.equal(350000);\r",
 									"        }\r",
 									"    });\r",
@@ -686,20 +686,20 @@
 									"    pm.expect(responseData).to.be.an('object');\r",
 									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
 									"    \r",
-									"    responseData.taxLevel.forEach((tax) => {\r",
-									"        if (tax.level === \"1\") {\r",
+									"    responseData.taxLevel.forEach((tax, index) => {\r",
+									"        if (index === 0) {\r",
 									"            pm.expect(tax.tax).to.equal(0);\r",
 									"        }\r",
-									"        if (tax.level === \"2\") {\r",
+									"        if (index === 1) {\r",
 									"            pm.expect(tax.tax).to.equal(35000);\r",
 									"        }\r",
-									"        if (tax.level === \"3\") {\r",
+									"        if (index === 2) {\r",
 									"            pm.expect(tax.tax).to.equal(75000);\r",
 									"        }\r",
-									"        if (tax.level === \"4\") {\r",
+									"        if (index === 3) {\r",
 									"            pm.expect(tax.tax).to.equal(200000);\r",
 									"        }\r",
-									"        if (tax.level === \"5\") {\r",
+									"        if (index === 4) {\r",
 									"            pm.expect(tax.tax).to.equal(350000);\r",
 									"        }\r",
 									"    });\r",
@@ -716,6 +716,445 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"totalIncome\": 3160000.0,\r\n    \"wht\": 700000.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 200000.0\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EXP06: upload CSV (expect tax)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect taxes length 3\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxes.length).to.eq(3)\r",
+									"})\r",
+									"pm.test(\"verify each result\", function () {\r",
+									"    var responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.taxes).to.be.an('array');\r",
+									"    \r",
+									"    responseData.taxes.forEach((tax, index) => {\r",
+									"        if (index === 0) {\r",
+									"            pm.expect(tax.totalIncome).to.equal(500000);\r",
+									"            pm.expect(tax.tax).to.equal(29000);\r",
+									"        }\r",
+									"        if (index === 1) {\r",
+									"            pm.expect(tax.totalIncome).to.equal(600000);\r",
+									"            pm.expect(tax.tax).to.equal(0);\r",
+									"            pm.expect(tax.taxRefund).to.equal(2000);\r",
+									"        }\r",
+									"        if (index === 2) {\r",
+									"            pm.expect(tax.totalIncome).to.equal(750000);\r",
+									"            pm.expect(tax.tax).to.equal(11250);\r",
+									"        }\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.formdata=[\r",
+									"    {\r",
+									"        \"key\": \"taxFile\",\r",
+									"        \"type\": \"file\",\r",
+									"        \"enabled\": true,\r",
+									"        \"src\": \"taxes.csv\"\r",
+									"    }\r",
+									"]\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "csv: not attatch file (expect 400 + cannot uploading file)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot uploading file\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "csv: upload file, but no content-type (expect 400 + cannot uploading file)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot uploading file\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.formdata=[\r",
+									"    {\r",
+									"        \"key\": \"taxFile\",\r",
+									"        \"type\": \"file\",\r",
+									"        \"enabled\": true,\r",
+									"        \"src\": \"taxes.csv\"\r",
+									"    }\r",
+									"]\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "csv: not csv format (expect 400 + cannot reading csv)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot reading csv\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.formdata=[\r",
+									"    {\r",
+									"        \"key\": \"taxFile\",\r",
+									"        \"type\": \"file\",\r",
+									"        \"enabled\": true,\r",
+									"        \"src\": \"not-csv-format.csv\"\r",
+									"    }\r",
+									"]\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "csv: invalid parsing (expect 400 + cannot reading csv)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot reading csv\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.formdata=[\r",
+									"    {\r",
+									"        \"key\": \"taxFile\",\r",
+									"        \"type\": \"file\",\r",
+									"        \"enabled\": true,\r",
+									"        \"src\": \"invalid-parsing.csv\"\r",
+									"    }\r",
+									"]\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EXP07:",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"expect tax is 14000\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.tax).to.eql(14000);\r",
+									"});\r",
+									"pm.test(\"expect taxLevel length 5\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.taxLevel.length).to.eq(5)\r",
+									"})\r",
+									"pm.test(\"expect all level\", function () {\r",
+									"    var responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('object');\r",
+									"    pm.expect(responseData.taxLevel).to.be.an('array');\r",
+									"    \r",
+									"    responseData.taxLevel.forEach((tax,index) => {\r",
+									"        if (index === 0) {\r",
+									"            pm.expect(tax.tax).to.equal(0);\r",
+									"        }\r",
+									"        if (index === 1) {\r",
+									"            pm.expect(tax.tax).to.equal(14000);\r",
+									"        }\r",
+									"        if (index === 2) {\r",
+									"            pm.expect(tax.tax).to.equal(0);\r",
+									"        }\r",
+									"        if (index === 3) {\r",
+									"            pm.expect(tax.tax).to.equal(0);\r",
+									"        }\r",
+									"        if (index === 4) {\r",
+									"            pm.expect(tax.tax).to.equal(0);\r",
+									"        }\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"totalIncome\": 500000.0,\r\n    \"wht\": 0.0,\r\n    \"allowances\": [\r\n        {\r\n            \"allowanceType\": \"k-receipt\",\r\n            \"amount\": 200000.0\r\n        },\r\n        {\r\n            \"allowanceType\": \"donation\",\r\n            \"amount\": 100000.0\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

@@ -51,7 +51,7 @@ func setup(t *testing.T) func() {
 }
 
 func TestSetPersonalDeductionIntegration_Success(t *testing.T) {
-	testcases := []struct {
+	testCases := []struct {
 		name  string
 		input admin.Input
 		want  admin.PersonalDeduction
@@ -67,7 +67,7 @@ func TestSetPersonalDeductionIntegration_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			teardown := setup(t)
 			defer teardown()

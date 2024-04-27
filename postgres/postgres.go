@@ -7,7 +7,7 @@ import (
 )
 
 type Postgres struct {
-	Db *sql.DB
+	DB *sql.DB
 }
 
 func New(databaseURL string) (*Postgres, error) {
@@ -22,5 +22,5 @@ func New(databaseURL string) (*Postgres, error) {
 		return nil, err
 	}
 
-	return &Postgres{Db: db}, nil
+	return &Postgres{DB: db}, nil
 }

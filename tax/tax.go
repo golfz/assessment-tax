@@ -35,3 +35,19 @@ type rate struct {
 	percentage  float64
 	description string
 }
+
+type CsvTaxRequest struct {
+	TotalIncome float64 `csv:"totalIncome"`
+	WHT         float64 `csv:"wht"`
+	Donation    float64 `csv:"donation"`
+}
+
+type CsvTaxResponse struct {
+	Taxes []CsvTaxRecord `json:"taxes"`
+}
+
+type CsvTaxRecord struct {
+	TotalIncome float64 `json:"totalIncome"`
+	Tax         float64 `json:"tax"`
+	TaxRefund   float64 `json:"taxRefund,omitempty"`
+}

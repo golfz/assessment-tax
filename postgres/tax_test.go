@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetDeduction_Success(t *testing.T) {
-	testcases := []struct {
+	testCases := []struct {
 		name string
 		rows *sqlmock.Rows
 		want deduction.Deduction
@@ -58,7 +58,7 @@ func TestGetDeduction_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			db, mock, err := sqlmock.New()
@@ -67,7 +67,7 @@ func TestGetDeduction_Success(t *testing.T) {
 			}
 			defer db.Close()
 			mock.ExpectQuery(`SELECT name, amount FROM deductions`).WillReturnRows(tc.rows)
-			pg := Postgres{Db: db}
+			pg := Postgres{DB: db}
 
 			// Act
 			deductionData, err := pg.GetDeduction()
@@ -88,7 +88,7 @@ func TestGetDeduction_Error(t *testing.T) {
 		}
 		defer db.Close()
 		mock.ExpectQuery(`SELECT name, amount FROM deductions`).WillReturnError(ErrCannotQueryDeduction)
-		pg := Postgres{Db: db}
+		pg := Postgres{DB: db}
 		wantDeduction := deduction.Deduction{}
 
 		// Act
@@ -112,7 +112,7 @@ func TestGetDeduction_Error(t *testing.T) {
 			AddRow("k-receipt", "50000.00").
 			AddRow("donation", "100000.00")
 		mock.ExpectQuery(`SELECT name, amount FROM deductions`).WillReturnRows(rows)
-		pg := Postgres{Db: db}
+		pg := Postgres{DB: db}
 		wantDeduction := deduction.Deduction{}
 
 		// Act

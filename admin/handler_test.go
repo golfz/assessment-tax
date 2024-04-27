@@ -70,7 +70,7 @@ func setup(method, url string, body interface{}) (*httptest.ResponseRecorder, ec
 }
 
 func TestSetPersonalDeductionHandler_Success(t *testing.T) {
-	testcases := []struct {
+	testCases := []struct {
 		name   string
 		amount float64
 	}{
@@ -88,7 +88,7 @@ func TestSetPersonalDeductionHandler_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})
@@ -173,7 +173,7 @@ func TestSetPersonalDeductionHandler_Error(t *testing.T) {
 }
 
 func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
-	testcases := []struct {
+	testCases := []struct {
 		name   string
 		amount float64
 	}{
@@ -191,7 +191,7 @@ func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})

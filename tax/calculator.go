@@ -77,3 +77,22 @@ func CalculateTax(info TaxInformation, deduction deduction.Deduction) (TaxResult
 
 	return taxResult, nil
 }
+
+func CalculateTaxFromCSV(records []TaxInformation, deductionData deduction.Deduction) (CsvTaxResponse, error) {
+	result := CsvTaxResponse{}
+
+	for _, taxInfo := range records {
+		taxResult, err := CalculateTax(taxInfo, deductionData)
+		if err != nil {
+			return CsvTaxResponse{}, ErrCalculatingTax
+		}
+
+		result.Taxes = append(result.Taxes, CsvTaxRecord{
+			TotalIncome: taxInfo.TotalIncome,
+			Tax:         taxResult.Tax,
+			TaxRefund:   taxResult.TaxRefund,
+		})
+	}
+
+	return result, nil
+}

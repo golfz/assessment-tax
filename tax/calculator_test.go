@@ -10,7 +10,7 @@ import (
 
 func TestCalculateNetIncome(t *testing.T) {
 	// Arrange
-	testcases := []struct {
+	testCases := []struct {
 		name              string
 		totalIncome       float64
 		personalDeduction float64
@@ -47,7 +47,7 @@ func TestCalculateNetIncome(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got := calculateNetIncome(tc.totalIncome, tc.personalDeduction, tc.totalAllowance)
@@ -65,7 +65,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
-	testcases := []struct {
+	testCases := []struct {
 		name      string
 		info      TaxInformation
 		deduction deduction.Deduction
@@ -151,7 +151,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.info, tc.deduction)
@@ -171,7 +171,7 @@ func TestCalculateTax_Success(t *testing.T) {
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
-	testcases := []struct {
+	testCases := []struct {
 		name    string
 		taxInfo TaxInformation
 		want    TaxResult
@@ -365,7 +365,7 @@ func TestCalculateTax_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.taxInfo, defaultDeduction)
@@ -385,7 +385,7 @@ func TestCalculateTax_WithTaxLevel(t *testing.T) {
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
-	testcases := []struct {
+	testCases := []struct {
 		name          string
 		taxInfo       TaxInformation
 		wantTaxResult TaxResult
@@ -441,7 +441,7 @@ func TestCalculateTax_WithTaxLevel(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.taxInfo, defaultDeduction)
@@ -465,7 +465,7 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 		Donation: 100_000.0,
 	}
 
-	testcases := []struct {
+	testCases := []struct {
 		name           string
 		taxInformation TaxInformation
 		wantErrors     []error
@@ -508,7 +508,7 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.taxInformation, defaultDeduction)
@@ -565,5 +565,79 @@ func TestCalculateTax_FromInvalidDeduction_Error(t *testing.T) {
 		assert.ErrorIs(t, err, deduction.ErrInvalidDonationDeduction)
 		assert.NotErrorIs(t, err, deduction.ErrInvalidPersonalDeduction)
 		assert.Equal(t, TaxResult{}, got)
+	})
+}
+
+func TestCalculateTaxFromCSV_Success(t *testing.T) {
+	deductionData := deduction.Deduction{
+		Personal: 60_000.0,
+		KReceipt: 50_000.0,
+		Donation: 100_000.0,
+	}
+
+	t.Run("EXP06: multiple records", func(t *testing.T) {
+		// Arrange
+		records := []TaxInformation{
+			{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+			{
+				TotalIncome: 600_000.0,
+				WHT:         40_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 20_000.0},
+				},
+			},
+			{
+				TotalIncome: 750_000.0,
+				WHT:         50_000.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 15_000.0},
+				},
+			},
+		}
+		want := CsvTaxResponse{
+			Taxes: []CsvTaxRecord{
+				{TotalIncome: 500_000.0, Tax: 29_000.0, TaxRefund: 0.0},
+				{TotalIncome: 600_000.0, Tax: 0.0, TaxRefund: 2_000.0},
+				{TotalIncome: 750_000.0, Tax: 11_250.0, TaxRefund: 0.0},
+			},
+		}
+
+		// Act
+		got, err := CalculateTaxFromCSV(records, deductionData)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, want, got)
+	})
+}
+
+func TestCalculateTaxFromCSV_Error(t *testing.T) {
+	t.Run("empty deduction error when calculating tax", func(t *testing.T) {
+		// Arrange
+		emptyDeduction := deduction.Deduction{}
+		records := []TaxInformation{
+			{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeDonation, Amount: 0.0},
+				},
+			},
+		}
+		want := CsvTaxResponse{}
+
+		// Act
+		got, err := CalculateTaxFromCSV(records, emptyDeduction)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrCalculatingTax)
+		assert.Equal(t, want, got)
 	})
 }

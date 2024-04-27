@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/subtle"
 	"fmt"
 	"github.com/golfz/assessment-tax/admin"
 	"github.com/golfz/assessment-tax/config"
@@ -16,6 +15,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	mw "github.com/golfz/assessment-tax/middleware"
 
 	_ "github.com/lib/pq"
 
@@ -43,16 +44,10 @@ func main() {
 
 	hTax := tax.New(pg)
 	e.POST("/tax/calculations", hTax.CalculateTaxHandler)
+	e.POST("/tax/calculations/upload-csv", hTax.UploadCSVHandler)
 
 	a := e.Group("/admin")
-
-	a.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		if subtle.ConstantTimeCompare([]byte(username), []byte(cfg.AdminUsername)) == 1 &&
-			subtle.ConstantTimeCompare([]byte(password), []byte(cfg.AdminPassword)) == 1 {
-			return true, nil
-		}
-		return false, nil
-	}))
+	a.Use(middleware.BasicAuth(mw.BasicAuth(*cfg)))
 
 	hAdmin := admin.New(pg)
 	a.POST("/deductions/personal", hAdmin.SetPersonalDeductionHandler)

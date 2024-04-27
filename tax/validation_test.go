@@ -9,7 +9,7 @@ import (
 
 func TestValidateTaxInformation_Success(t *testing.T) {
 	// Arrange
-	testcases := []struct {
+	testCases := []struct {
 		name    string
 		taxInfo TaxInformation
 	}{
@@ -45,7 +45,7 @@ func TestValidateTaxInformation_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			gotError := validateTaxInformation(tc.taxInfo)
@@ -58,7 +58,7 @@ func TestValidateTaxInformation_Success(t *testing.T) {
 
 func TestValidateTaxInformation_Error(t *testing.T) {
 	// Arrange
-	testcases := []struct {
+	testCases := []struct {
 		name       string
 		taxInfo    TaxInformation
 		wantErrors []error
@@ -97,7 +97,7 @@ func TestValidateTaxInformation_Error(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			gotError := validateTaxInformation(tc.taxInfo)
