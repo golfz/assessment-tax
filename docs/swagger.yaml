@@ -11,6 +11,11 @@ definitions:
         minimum: 0
         type: number
     type: object
+  admin.KReceiptDeduction:
+    properties:
+      kReceipt:
+        type: number
+    type: object
   admin.PersonalDeduction:
     properties:
       personalDeduction:
@@ -77,6 +82,36 @@ info:
   title: K-Tax API
   version: "1.0"
 paths:
+  /admin/deductions/k-receipt:
+    post:
+      consumes:
+      - application/json
+      description: Admin set k-receipt deduction
+      parameters:
+      - description: Amount to set personal deduction
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/admin.Input'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.KReceiptDeduction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/admin.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/admin.Err'
+      summary: Admin set k-receipt deduction
+      tags:
+      - admin
   /admin/deductions/personal:
     post:
       consumes:

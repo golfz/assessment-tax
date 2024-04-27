@@ -15,6 +15,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/deductions/k-receipt": {
+            "post": {
+                "description": "Admin set k-receipt deduction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Admin set k-receipt deduction",
+                "parameters": [
+                    {
+                        "description": "Amount to set personal deduction",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.Input"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin.KReceiptDeduction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/admin.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/deductions/personal": {
             "post": {
                 "description": "Admin set personal deduction",
@@ -123,6 +169,14 @@ const docTemplate = `{
                 "amount": {
                     "type": "number",
                     "minimum": 0
+                }
+            }
+        },
+        "admin.KReceiptDeduction": {
+            "type": "object",
+            "properties": {
+                "kReceipt": {
+                    "type": "number"
                 }
             }
         },
