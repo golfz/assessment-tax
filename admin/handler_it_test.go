@@ -18,7 +18,7 @@ import (
 	"testing"
 )
 
-func TestSetPersonalDeduction_WithDefault_Integration_Success(t *testing.T) {
+func TestSetPersonalDeductionHandler_WithDefault_Integration_Success(t *testing.T) {
 	// Arrange
 	input := admin.Input{
 		Amount: deduction.DefaultPersonalDeduction,
