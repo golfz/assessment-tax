@@ -245,6 +245,19 @@ func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
 			wantTaxLevels: []float64{0.0, 19_000.0, 0.0, 0.0, 0.0},
 		},
 		{
+			name: "EXP07: multiple-allowance, net-income=290,000 (rate=10%); expect tax=14,000",
+			taxInfo: TaxInformation{
+				TotalIncome: 500_000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{Type: AllowanceTypeKReceipt, Amount: 200_000.0},
+					{Type: AllowanceTypeDonation, Amount: 100_000.0},
+				},
+			},
+			wantTaxResult: TaxResult{Tax: 14_000.0, TaxRefund: 0.0},
+			wantTaxLevels: []float64{0.0, 14_000.0, 0.0, 0.0, 0.0},
+		},
+		{
 			name: "net-income=100,000 (rate=0%); expect tax=0",
 			taxInfo: TaxInformation{
 				TotalIncome: 260_000.0,

@@ -205,6 +205,18 @@ func TestCalculateTaxHandler_WithTaxLevel_Integration_Success(t *testing.T) {
 			wantTaxLevels: []float64{0.0, 0.0, 0.0, 0.0, 0.0},
 		},
 		{
+			name: "net-income=100,000 (rate=0%); expect tax=0",
+			taxInfo: tax.TaxInformation{
+				TotalIncome: 260_000.0,
+				WHT:         0.0,
+				Allowances: []tax.Allowance{
+					{Type: tax.AllowanceTypeDonation, Amount: 200000.0},
+				},
+			},
+			wantTaxResult: tax.TaxResult{Tax: 0.0, TaxRefund: 0.0},
+			wantTaxLevels: []float64{0.0, 0.0, 0.0, 0.0, 0.0},
+		},
+		{
 			name: "net-income=3,000,000 (rate=35%); expect tax=660,000",
 			taxInfo: tax.TaxInformation{
 				TotalIncome: 3_160_000.0,
