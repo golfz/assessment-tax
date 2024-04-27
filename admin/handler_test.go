@@ -16,6 +16,7 @@ import (
 
 const (
 	MethodSetPersonalDeduction = "SetPersonalDeduction"
+	MethodSetKReceiptDeduction = "SetKReceiptDeduction"
 )
 
 type mockAdminStorer struct {
@@ -32,6 +33,12 @@ func NewMockTaxStorer() *mockAdminStorer {
 
 func (m *mockAdminStorer) SetPersonalDeduction(amount float64) error {
 	m.methodToCall[MethodSetPersonalDeduction] = true
+	m.whatIsAmount = amount
+	return m.err
+}
+
+func (m *mockAdminStorer) SetKReceiptDeduction(amount float64) error {
+	m.methodToCall[MethodSetKReceiptDeduction] = true
 	m.whatIsAmount = amount
 	return m.err
 }

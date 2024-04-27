@@ -9,6 +9,7 @@ import (
 
 type Storer interface {
 	SetPersonalDeduction(amount float64) error
+	SetKReceiptDeduction(amount float64) error
 }
 
 type Handler struct {
@@ -62,4 +63,33 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, PersonalDeduction{PersonalDeduction: input.Amount})
+}
+
+func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
+	var input Input
+	err := c.Bind(&input)
+	if err != nil {
+		c.Logger().Printf("error reading request body: %v", err)
+		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingRequestBody.Error()})
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(input); err != nil {
+		c.Logger().Printf("error validating request body: %v", err)
+		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInput.Error()})
+	}
+
+	err = deduction.ValidateKReceiptDeduction(input.Amount)
+	if err != nil {
+		c.Logger().Printf("error validating k-receipt deduction: %v", err)
+		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidKReceiptDeduction.Error()})
+	}
+
+	err = h.store.SetKReceiptDeduction(input.Amount)
+	if err != nil {
+		c.Logger().Printf("error setting k-receipt deduction: %v", err)
+		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingKReceiptDeduction.Error()})
+	}
+
+	return c.JSON(http.StatusOK, KReceiptDeduction{KReceiptDeduction: input.Amount})
 }

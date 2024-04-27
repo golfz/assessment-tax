@@ -9,3 +9,7 @@ func (p *Postgres) SetPersonalDeduction(amount float64) error {
 
 	return nil
 }
+
+func (p *Postgres) SetKReceiptDeduction(amount float64) error {
+	return nil
+}
