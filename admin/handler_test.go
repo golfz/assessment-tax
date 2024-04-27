@@ -321,3 +321,35 @@ func TestSetKReceiptDeductionHandler_Error(t *testing.T) {
 		assert.Equal(t, ErrSettingKReceiptDeduction.Error(), got.Message)
 	})
 }
+
+func TestSetKReceiptDeductionHandler_ValidateAmount_Error(t *testing.T) {
+	testCases := []struct {
+		name   string
+		amount float64
+	}{
+		{
+			name:   "amount less than minimum k-receipt deduction; expected error",
+			amount: deduction.MinKReceiptDeduction - 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+
+			// Act
+			err := h.SetKReceiptDeductionHandler(c)
+
+			// Assert
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+			var got Err
+			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+			}
+			assert.NotEmpty(t, got.Message)
+			assert.Equal(t, ErrInvalidInput.Error(), got.Message)
+		})
+	}
+}
