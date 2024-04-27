@@ -586,43 +586,6 @@ func TestUploadCSVHandler_Error(t *testing.T) {
 		assert.Equal(t, ErrReadingCSV.Error(), got.Message)
 	})
 
-	t.Run("get deduction error expect 500 with ErrGettingDeduction", func(t *testing.T) {
-		// Arrange
-		body := new(bytes.Buffer)
-		writer := multipart.NewWriter(body)
-		part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
-		data := "totalIncome,wht,donation" + "\n"
-		data += "500000,0,0" + "\n"
-		data += "600000,40000,20000" + "\n"
-		data += "750000,50000,15000"
-		part.Write([]byte(data))
-		writer.Close()
-
-		e := echo.New()
-		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		mock := NewMockTaxStorer()
-		mock.ExpectToCall("UploadCSV")
-		mock.err = ErrGettingDeduction
-
-		// Act
-		h := New(mock)
-		err := h.UploadCSVHandler(c)
-
-		// Assert
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusInternalServerError, rec.Code)
-
-		var gotErr Err
-		if err := json.Unmarshal(rec.Body.Bytes(), &gotErr); err != nil {
-			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
-		}
-		assert.Equal(t, ErrGettingDeduction.Error(), gotErr.Message)
-	})
-
 	t.Run("invalid parsing csv expect 400 with ErrReadingCSV", func(t *testing.T) {
 		// Arrange
 		body := new(bytes.Buffer)
@@ -660,6 +623,43 @@ func TestUploadCSVHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
 		}
 		assert.Equal(t, ErrReadingCSV.Error(), gotErr.Message)
+	})
+
+	t.Run("get deduction error expect 500 with ErrGettingDeduction", func(t *testing.T) {
+		// Arrange
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+		data := "totalIncome,wht,donation" + "\n"
+		data += "500000,0,0" + "\n"
+		data += "600000,40000,20000" + "\n"
+		data += "750000,50000,15000"
+		part.Write([]byte(data))
+		writer.Close()
+
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		mock := NewMockTaxStorer()
+		mock.ExpectToCall("UploadCSV")
+		mock.err = ErrGettingDeduction
+
+		// Act
+		h := New(mock)
+		err := h.UploadCSVHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+
+		var gotErr Err
+		if err := json.Unmarshal(rec.Body.Bytes(), &gotErr); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+		}
+		assert.Equal(t, ErrGettingDeduction.Error(), gotErr.Message)
 	})
 
 	t.Run("zero-deduction expect 500 with ErrCalculatingTax", func(t *testing.T) {

@@ -3,6 +3,7 @@
 package tax_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/golfz/assessment-tax/config"
 	"github.com/golfz/assessment-tax/postgres"
@@ -10,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -17,7 +19,7 @@ import (
 	"testing"
 )
 
-func TestCalculateTaxIntegration_Success(t *testing.T) {
+func TestCalculateTaxHandler_Integration_Success(t *testing.T) {
 	testcases := []struct {
 		name          string
 		taxInfo       tax.TaxInformation
@@ -170,7 +172,7 @@ func TestCalculateTaxIntegration_Success(t *testing.T) {
 	}
 }
 
-func TestCalculateTaxIntegration_WithTaxLevel_Success(t *testing.T) {
+func TestCalculateTaxHandler_WithTaxLevel_Integration_Success(t *testing.T) {
 	// Arrange
 	testcases := []struct {
 		name          string
@@ -267,4 +269,45 @@ func TestCalculateTaxIntegration_WithTaxLevel_Success(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUploadCSVHandler_Integration_Success(t *testing.T) {
+	// Arrange
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("taxFile", "taxes.csv")
+	data := "totalIncome,wht,donation" + "\n"
+	data += "500000,0,0" + "\n"
+	data += "600000,40000,20000" + "\n"
+	data += "750000,50000,15000"
+	part.Write([]byte(data))
+	writer.Close()
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	cfg := config.NewWith(os.Getenv)
+	pg, err := postgres.New(cfg.DatabaseURL)
+	if err != nil {
+		t.Errorf("failed to connect to database: %v", err)
+	}
+
+	// Act
+	h := tax.New(pg)
+	err = h.UploadCSVHandler(c)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var gotCsvTaxResponse tax.CsvTaxResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &gotCsvTaxResponse); err != nil {
+		t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+	}
+	assert.Equal(t, 3, len(gotCsvTaxResponse.Taxes))
+	assert.Equal(t, 500000.0, gotCsvTaxResponse.Taxes[0].TotalIncome)
+	assert.Equal(t, 29000.0, gotCsvTaxResponse.Taxes[0].Tax)
 }
