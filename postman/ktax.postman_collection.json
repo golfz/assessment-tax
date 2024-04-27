@@ -1100,7 +1100,7 @@
 					"response": []
 				},
 				{
-					"name": "EXP07:",
+					"name": "EXP07: multiple-allowance",
 					"event": [
 						{
 							"listen": "test",
