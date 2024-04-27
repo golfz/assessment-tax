@@ -18,7 +18,7 @@ import (
 	"testing"
 )
 
-func TestSetPersonalDeductionHandler_WithDefault_Integration_Success(t *testing.T) {
+func TestSetPersonalDeductionHandler_Integration_WithDefault_Success(t *testing.T) {
 	// Arrange
 	input := admin.Input{
 		Amount: deduction.DefaultPersonalDeduction,
@@ -58,7 +58,7 @@ func TestSetPersonalDeductionHandler_WithDefault_Integration_Success(t *testing.
 
 }
 
-func TestSetKReceiptDeductionHandler_WithDefault_Integration_Success(t *testing.T) {
+func TestSetKReceiptDeductionHandler_Integration_WithDefault_Success(t *testing.T) {
 	// Arrange
 	input := admin.Input{
 		Amount: deduction.DefaultKReceiptDeduction,
