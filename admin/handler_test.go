@@ -225,8 +225,12 @@ func TestSetKReceiptDeductionHandler_Success(t *testing.T) {
 		amount float64
 	}{
 		{
-			name:   "EXP08: setting personal deduction",
+			name:   "EXP08: setting k-receipt deduction",
 			amount: 70_000.0,
+		},
+		{
+			name:   "setting with minimum k-receipt deduction",
+			amount: deduction.MinKReceiptDeduction + 1,
 		},
 	}
 
