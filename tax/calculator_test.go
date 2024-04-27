@@ -10,7 +10,7 @@ import (
 
 func TestCalculateNetIncome(t *testing.T) {
 	// Arrange
-	testcases := []struct {
+	testCases := []struct {
 		name              string
 		totalIncome       float64
 		personalDeduction float64
@@ -47,7 +47,7 @@ func TestCalculateNetIncome(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got := calculateNetIncome(tc.totalIncome, tc.personalDeduction, tc.totalAllowance)
@@ -65,7 +65,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
-	testcases := []struct {
+	testCases := []struct {
 		name      string
 		info      TaxInformation
 		deduction deduction.Deduction
@@ -151,7 +151,7 @@ func TestCalculateTax_ByRateFromIncomeOnly_ExpectSuccess(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.info, tc.deduction)
@@ -171,7 +171,7 @@ func TestCalculateTax_Success(t *testing.T) {
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
-	testcases := []struct {
+	testCases := []struct {
 		name    string
 		taxInfo TaxInformation
 		want    TaxResult
@@ -365,7 +365,7 @@ func TestCalculateTax_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.taxInfo, defaultDeduction)
@@ -385,7 +385,7 @@ func TestCalculateTax_WithTaxLevel(t *testing.T) {
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
-	testcases := []struct {
+	testCases := []struct {
 		name          string
 		taxInfo       TaxInformation
 		wantTaxResult TaxResult
@@ -441,7 +441,7 @@ func TestCalculateTax_WithTaxLevel(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.taxInfo, defaultDeduction)
@@ -465,7 +465,7 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 		Donation: 100_000.0,
 	}
 
-	testcases := []struct {
+	testCases := []struct {
 		name           string
 		taxInformation TaxInformation
 		wantErrors     []error
@@ -508,7 +508,7 @@ func TestCalculateTax_FromInvalidTaxInformation_Error(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			got, err := CalculateTax(tc.taxInformation, defaultDeduction)

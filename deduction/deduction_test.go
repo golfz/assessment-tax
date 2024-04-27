@@ -14,7 +14,7 @@ func TestValidate_Success(t *testing.T) {
 		Donation: 100_000.0,
 	}
 	// Arrange
-	testcases := []struct {
+	testCases := []struct {
 		name      string
 		deduction Deduction
 	}{
@@ -72,7 +72,7 @@ func TestValidate_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			gotError := tc.deduction.Validate()
@@ -90,7 +90,7 @@ func TestValidate_Error(t *testing.T) {
 		Donation: 100_000.0,
 	}
 	// Arrange
-	testcases := []struct {
+	testCases := []struct {
 		name       string
 		deduction  Deduction
 		wantErrors []error
@@ -165,7 +165,7 @@ func TestValidate_Error(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
 			gotError := tc.deduction.Validate()

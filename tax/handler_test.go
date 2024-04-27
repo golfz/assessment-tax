@@ -79,7 +79,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 		Donation: 100_000.0,
 	}
 
-	testcases := []struct {
+	testCases := []struct {
 		name          string
 		taxInfo       TaxInformation
 		wantTaxResult TaxResult
@@ -194,7 +194,7 @@ func TestCalculateTaxHandler_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", tc.taxInfo)
@@ -226,7 +226,7 @@ func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
 		KReceipt: 50_000.0,
 		Donation: 100_000.0,
 	}
-	testcases := []struct {
+	testCases := []struct {
 		name          string
 		taxInfo       TaxInformation
 		wantTaxResult TaxResult
@@ -282,7 +282,7 @@ func TestCalculateTaxHandler_WithTaxLevel_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			resp, c, h, mock := setup(http.MethodPost, "/tax/calculations", tc.taxInfo)

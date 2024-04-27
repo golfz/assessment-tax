@@ -20,7 +20,7 @@ import (
 )
 
 func TestCalculateTaxHandler_Integration_Success(t *testing.T) {
-	testcases := []struct {
+	testCases := []struct {
 		name          string
 		taxInfo       tax.TaxInformation
 		wantTaxResult tax.TaxResult
@@ -135,7 +135,7 @@ func TestCalculateTaxHandler_Integration_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			cfg := config.NewWith(os.Getenv)
@@ -174,7 +174,7 @@ func TestCalculateTaxHandler_Integration_Success(t *testing.T) {
 
 func TestCalculateTaxHandler_WithTaxLevel_Integration_Success(t *testing.T) {
 	// Arrange
-	testcases := []struct {
+	testCases := []struct {
 		name          string
 		taxInfo       tax.TaxInformation
 		wantTaxResult tax.TaxResult
@@ -230,7 +230,7 @@ func TestCalculateTaxHandler_WithTaxLevel_Integration_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			cfg := config.NewWith(os.Getenv)

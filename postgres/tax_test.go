@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetDeduction_Success(t *testing.T) {
-	testcases := []struct {
+	testCases := []struct {
 		name string
 		rows *sqlmock.Rows
 		want deduction.Deduction
@@ -58,7 +58,7 @@ func TestGetDeduction_Success(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
 			db, mock, err := sqlmock.New()
