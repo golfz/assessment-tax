@@ -18,38 +18,6 @@ import (
 	"testing"
 )
 
-func setup(t *testing.T) func() {
-	return func() {
-		// Arrange
-		cfg := config.NewWith(os.Getenv)
-
-		pg, err := postgres.New(cfg.DatabaseURL)
-		if err != nil {
-			t.Errorf("failed to connect to database: %v", err)
-		}
-
-		e := echo.New()
-		hAdmin := admin.New(pg)
-		e.POST("/admin/deductions/personal", hAdmin.SetPersonalDeductionHandler)
-
-		input := admin.Input{
-			Amount: deduction.DefaultPersonalDeduction,
-		}
-		var bReader io.Reader
-		b, _ := json.Marshal(input)
-		bReader = strings.NewReader(string(b))
-		req := httptest.NewRequest(http.MethodPost, "/admin/deductions/personal", bReader)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		rec := httptest.NewRecorder()
-
-		// Act
-		e.ServeHTTP(rec, req)
-
-		// Assert
-		assert.Equal(t, http.StatusOK, rec.Code)
-	}
-}
-
 func TestSetPersonalDeduction_Integration_Success(t *testing.T) {
 	input := admin.Input{
 		Amount: deduction.DefaultPersonalDeduction,
@@ -59,9 +27,6 @@ func TestSetPersonalDeduction_Integration_Success(t *testing.T) {
 	}
 
 	t.Run("setting with default personal deduction", func(t *testing.T) {
-		teardown := setup(t)
-		defer teardown()
-
 		// Arrange
 		cfg := config.NewWith(os.Getenv)
 
@@ -104,9 +69,6 @@ func TestSetKReceiptDeductionHandler_Integration_Success(t *testing.T) {
 	}
 
 	t.Run("setting with default k-receipt deduction", func(t *testing.T) {
-		teardown := setup(t)
-		defer teardown()
-
 		// Arrange
 		cfg := config.NewWith(os.Getenv)
 
