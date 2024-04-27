@@ -7,3 +7,7 @@ type Input struct {
 type PersonalDeduction struct {
 	PersonalDeduction float64 `json:"personalDeduction"`
 }
+
+type KReceiptDeduction struct {
+	KReceiptDeduction float64 `json:"kReceipt"`
+}
