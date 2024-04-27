@@ -218,3 +218,37 @@ func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
 		})
 	}
 }
+
+func TestSetKReceiptDeductionHandler_Success(t *testing.T) {
+	testCases := []struct {
+		name   string
+		amount float64
+	}{
+		{
+			name:   "EXP08: setting personal deduction",
+			amount: 70_000.0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+			mock.ExpectToCall(MethodSetKReceiptDeduction)
+
+			// Act
+			err := h.SetKReceiptDeductionHandler(c)
+
+			// Assert
+			mock.Verify(t)
+			assert.Equal(t, tc.amount, mock.whatIsAmount)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			var got KReceiptDeduction
+			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+			}
+			assert.Equal(t, tc.amount, got.KReceiptDeduction)
+		})
+	}
+}
