@@ -50,13 +50,13 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidTaxInformation.Error()})
 	}
 
-	deduction, err := h.store.GetDeduction()
+	deductionData, err := h.store.GetDeduction()
 	if err != nil {
 		c.Logger().Printf("error getting deduction: %v", err)
 		return c.JSON(http.StatusInternalServerError, Err{Message: ErrGettingDeduction.Error()})
 	}
 
-	result, err := CalculateTax(taxInfo, deduction)
+	result, err := CalculateTax(taxInfo, deductionData)
 	if err != nil {
 		c.Logger().Printf("error calculating tax: %v", err)
 		if errors.Is(err, ErrInvalidTaxInformation) {

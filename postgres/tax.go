@@ -12,7 +12,7 @@ var (
 
 func (p *Postgres) GetDeduction() (deduction.Deduction, error) {
 	selectSql := `SELECT name, amount FROM deductions`
-	rows, err := p.Db.Query(selectSql)
+	rows, err := p.DB.Query(selectSql)
 	if err != nil {
 		return deduction.Deduction{}, ErrCannotQueryDeduction
 	}

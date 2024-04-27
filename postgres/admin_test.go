@@ -18,7 +18,7 @@ func TestSetPersonalDeduction_Success(t *testing.T) {
 	defer db.Close()
 
 	mock.ExpectExec("^UPDATE (.+)").WillReturnResult(sqlmock.NewResult(0, 1))
-	pg := Postgres{Db: db}
+	pg := Postgres{DB: db}
 
 	// Act
 	err = pg.SetPersonalDeduction(60000.00)
@@ -37,7 +37,7 @@ func TestSetPersonalDeduction_Error(t *testing.T) {
 	defer db.Close()
 
 	mock.ExpectExec("^UPDATE (.+)").WillReturnError(errors.New("unexpected error"))
-	pg := Postgres{Db: db}
+	pg := Postgres{DB: db}
 
 	// Act
 	err = pg.SetPersonalDeduction(60000.00)
