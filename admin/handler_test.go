@@ -300,4 +300,24 @@ func TestSetKReceiptDeductionHandler_Error(t *testing.T) {
 		assert.NotEmpty(t, got.Message)
 		assert.Equal(t, ErrInvalidInput.Error(), got.Message)
 	})
+
+	t.Run("call SetKReceiptDeduction() error", func(t *testing.T) {
+		// Arrange
+		body := struct{ Amount float64 }{Amount: 70_000}
+		resp, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", body)
+		mock.err = ErrInvalidKReceiptDeduction
+
+		// Act
+		err := h.SetKReceiptDeductionHandler(c)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, resp.Code)
+		var got Err
+		if err := json.Unmarshal(resp.Body.Bytes(), &got); err != nil {
+			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
+		}
+		assert.NotEmpty(t, got.Message)
+		assert.Equal(t, ErrSettingKReceiptDeduction.Error(), got.Message)
+	})
 }
