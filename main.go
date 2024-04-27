@@ -51,6 +51,7 @@ func main() {
 
 	hAdmin := admin.New(pg)
 	a.POST("/deductions/personal", hAdmin.SetPersonalDeductionHandler)
+	a.POST("/deductions/k-receipt", hAdmin.SetKReceiptDeductionHandler)
 
 	// monitor shutdown signal
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
