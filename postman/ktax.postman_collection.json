@@ -825,6 +825,281 @@
 					"response": []
 				},
 				{
+					"name": "csv: not attatch file (expect 400 + cannot uploading file)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot uploading file\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "csv: upload file, but no content-type (expect 400 + cannot uploading file)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot uploading file\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.formdata=[\r",
+									"    {\r",
+									"        \"key\": \"taxFile\",\r",
+									"        \"type\": \"file\",\r",
+									"        \"enabled\": true,\r",
+									"        \"src\": \"taxes.csv\"\r",
+									"    }\r",
+									"]\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "csv: not csv format (expect 400 + cannot reading csv)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot reading csv\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.formdata=[\r",
+									"    {\r",
+									"        \"key\": \"taxFile\",\r",
+									"        \"type\": \"file\",\r",
+									"        \"enabled\": true,\r",
+									"        \"src\": \"not-csv-format.csv\"\r",
+									"    }\r",
+									"]\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "csv: invalid parsing (expect 400 + cannot reading csv)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"expect status code is 200\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"expect error message\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.message).to.eq(\"cannot reading csv\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.body.formdata=[\r",
+									"    {\r",
+									"        \"key\": \"taxFile\",\r",
+									"        \"type\": \"file\",\r",
+									"        \"enabled\": true,\r",
+									"        \"src\": \"invalid-parsing.csv\"\r",
+									"    }\r",
+									"]\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "taxFile",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/tax/calculations/upload-csv",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tax",
+								"calculations",
+								"upload-csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "EXP07:",
 					"event": [
 						{
