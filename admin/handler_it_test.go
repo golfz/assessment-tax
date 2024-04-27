@@ -18,7 +18,8 @@ import (
 	"testing"
 )
 
-func TestSetPersonalDeduction_Integration_Success(t *testing.T) {
+func TestSetPersonalDeduction_WithDefault_Integration_Success(t *testing.T) {
+	// Arrange
 	input := admin.Input{
 		Amount: deduction.DefaultPersonalDeduction,
 	}
@@ -26,41 +27,39 @@ func TestSetPersonalDeduction_Integration_Success(t *testing.T) {
 		PersonalDeduction: deduction.DefaultPersonalDeduction,
 	}
 
-	t.Run("setting with default personal deduction", func(t *testing.T) {
-		// Arrange
-		cfg := config.NewWith(os.Getenv)
+	cfg := config.NewWith(os.Getenv)
+	pg, err := postgres.New(cfg.DatabaseURL)
+	if err != nil {
+		t.Errorf("failed to connect to database: %v", err)
+	}
 
-		pg, err := postgres.New(cfg.DatabaseURL)
-		if err != nil {
-			t.Errorf("failed to connect to database: %v", err)
-		}
+	e := echo.New()
+	hAdmin := admin.New(pg)
+	e.POST("/admin/deductions/personal", hAdmin.SetPersonalDeductionHandler)
 
-		e := echo.New()
-		hAdmin := admin.New(pg)
-		e.POST("/admin/deductions/personal", hAdmin.SetPersonalDeductionHandler)
+	var bReader io.Reader
+	b, _ := json.Marshal(input)
+	bReader = strings.NewReader(string(b))
+	req := httptest.NewRequest(http.MethodPost, "/admin/deductions/personal", bReader)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
 
-		var bReader io.Reader
-		b, _ := json.Marshal(input)
-		bReader = strings.NewReader(string(b))
-		req := httptest.NewRequest(http.MethodPost, "/admin/deductions/personal", bReader)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		rec := httptest.NewRecorder()
+	// Act
+	e.ServeHTTP(rec, req)
 
-		// Act
-		e.ServeHTTP(rec, req)
+	// Assert
+	assert.Equal(t, http.StatusOK, rec.Code)
 
-		// Assert
-		assert.Equal(t, http.StatusOK, rec.Code)
+	var got admin.PersonalDeduction
+	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+		t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+	}
+	assert.Equal(t, want, got)
 
-		var got admin.PersonalDeduction
-		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
-			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
-		}
-		assert.Equal(t, want, got)
-	})
 }
 
-func TestSetKReceiptDeductionHandler_Integration_Success(t *testing.T) {
+func TestSetKReceiptDeductionHandler_WithDefault_Integration_Success(t *testing.T) {
+	// Arrange
 	input := admin.Input{
 		Amount: deduction.DefaultKReceiptDeduction,
 	}
@@ -68,36 +67,32 @@ func TestSetKReceiptDeductionHandler_Integration_Success(t *testing.T) {
 		KReceiptDeduction: deduction.DefaultKReceiptDeduction,
 	}
 
-	t.Run("setting with default k-receipt deduction", func(t *testing.T) {
-		// Arrange
-		cfg := config.NewWith(os.Getenv)
+	cfg := config.NewWith(os.Getenv)
+	pg, err := postgres.New(cfg.DatabaseURL)
+	if err != nil {
+		t.Errorf("failed to connect to database: %v", err)
+	}
 
-		pg, err := postgres.New(cfg.DatabaseURL)
-		if err != nil {
-			t.Errorf("failed to connect to database: %v", err)
-		}
+	e := echo.New()
+	hAdmin := admin.New(pg)
+	e.POST("/admin/deductions/k-receipt", hAdmin.SetKReceiptDeductionHandler)
 
-		e := echo.New()
-		hAdmin := admin.New(pg)
-		e.POST("/admin/deductions/k-receipt", hAdmin.SetKReceiptDeductionHandler)
+	var bReader io.Reader
+	b, _ := json.Marshal(input)
+	bReader = strings.NewReader(string(b))
+	req := httptest.NewRequest(http.MethodPost, "/admin/deductions/k-receipt", bReader)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
 
-		var bReader io.Reader
-		b, _ := json.Marshal(input)
-		bReader = strings.NewReader(string(b))
-		req := httptest.NewRequest(http.MethodPost, "/admin/deductions/k-receipt", bReader)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		rec := httptest.NewRecorder()
+	// Act
+	e.ServeHTTP(rec, req)
 
-		// Act
-		e.ServeHTTP(rec, req)
+	// Assert
+	assert.Equal(t, http.StatusOK, rec.Code)
 
-		// Assert
-		assert.Equal(t, http.StatusOK, rec.Code)
-
-		var got admin.KReceiptDeduction
-		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
-			t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
-		}
-		assert.Equal(t, want, got)
-	})
+	var got admin.KReceiptDeduction
+	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+		t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
+	}
+	assert.Equal(t, want, got)
 }
