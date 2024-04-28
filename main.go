@@ -18,23 +18,7 @@ import (
 	_ "github.com/golfz/assessment-tax/docs"
 )
 
-// @title		K-Tax API
-// @version		1.0
-// @description This is an API for K-Tax.
-// @host		localhost:8080
-// @BasePath    /
-// @securityDefinitions.basic BasicAuth
-func main() {
-	cfg := config.NewWith(os.Getenv)
-	pg := initPostgres(cfg)
-	e := router.New(pg, cfg)
-
-	ctx, stop := monitorShutdownSignal()
-	defer stop()
-
-	go startServer(e, cfg)
-	waitForShutdown(ctx, e)
-}
+const gracefulShutdownTimeout = 10 * time.Second
 
 func initPostgres(cfg *config.Config) *postgres.Postgres {
 	pg, err := postgres.New(cfg.DatabaseURL)
@@ -59,11 +43,29 @@ func waitForShutdown(ctx context.Context, e *echo.Echo) {
 	<-ctx.Done()
 	fmt.Println("shutting down the server")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		e.Logger.Fatal(err)
 	}
 
 	fmt.Println("server gracefully stopped")
+}
+
+// @title		K-Tax API
+// @version		1.0
+// @description This is an API for K-Tax.
+// @host		localhost:8080
+// @BasePath    /
+// @securityDefinitions.basic BasicAuth
+func main() {
+	cfg := config.NewWith(os.Getenv)
+	pg := initPostgres(cfg)
+	e := router.New(pg, cfg)
+
+	ctx, stop := monitorShutdownSignal()
+	defer stop()
+
+	go startServer(e, cfg)
+	waitForShutdown(ctx, e)
 }
