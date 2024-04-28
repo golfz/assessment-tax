@@ -1,6 +1,6 @@
 package admin
 
-type Input struct {
+type Deduction struct {
 	Amount float64 `json:"amount" validate:"min=0"`
 }
 

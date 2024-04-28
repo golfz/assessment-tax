@@ -98,7 +98,7 @@ func TestSetPersonalDeductionHandler_Success(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})
+			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", Deduction{Amount: tc.amount})
 			mock.ExpectToCall(MethodSetPersonalDeduction)
 
 			// Act
@@ -201,7 +201,7 @@ func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})
+			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", Deduction{Amount: tc.amount})
 
 			// Act
 			err := h.SetPersonalDeductionHandler(c)
@@ -241,7 +241,7 @@ func TestSetKReceiptDeductionHandler_Success(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", Deduction{Amount: tc.amount})
 			mock.ExpectToCall(MethodSetKReceiptDeduction)
 
 			// Act
@@ -348,7 +348,7 @@ func TestSetKReceiptDeductionHandler_ValidateAmount_Error(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", Deduction{Amount: tc.amount})
 
 			// Act
 			err := h.SetKReceiptDeductionHandler(c)

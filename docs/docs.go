@@ -40,7 +40,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/admin.Input"
+                            "$ref": "#/definitions/admin.Deduction"
                         }
                     }
                 ],
@@ -97,7 +97,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/admin.Input"
+                            "$ref": "#/definitions/admin.Deduction"
                         }
                     }
                 ],
@@ -221,20 +221,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "admin.Err": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "admin.Input": {
+        "admin.Deduction": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "number",
                     "minimum": 0
+                }
+            }
+        },
+        "admin.Err": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
                 }
             }
         },

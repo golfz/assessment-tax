@@ -31,7 +31,7 @@ type Err struct {
 //			@Description	Admin set personal deduction
 //			@Tags			admin
 //		    @Accept			json
-//		    @Param			amount		body		Input	true		"Amount to set personal deduction"
+//		    @Param			amount		body		Deduction	true		"Amount to set personal deduction"
 //			@Produce		json
 //			@Success		200	            {object}	PersonalDeduction
 //			@Failure		400	            {object}	Err
@@ -39,7 +39,7 @@ type Err struct {
 //			@Failure		500	            {object}	Err
 //			@Router			/admin/deductions/personal [post]
 func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
-	var input Input
+	var input Deduction
 	err := c.Bind(&input)
 	if err != nil {
 		c.Logger().Printf("error reading request body: %v", err)
@@ -74,7 +74,7 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 //				@Description	Admin set k-receipt deduction
 //				@Tags			admin
 //			    @Accept			json
-//			    @Param			amount		body		Input	true		"Amount to set personal deduction"
+//			    @Param			amount		body		Deduction	true		"Amount to set personal deduction"
 //				@Produce		json
 //				@Success		200	            {object}	KReceiptDeduction
 //				@Failure		400	            {object}	Err
@@ -82,7 +82,7 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 //				@Failure		500	            {object}	Err
 //				@Router			/admin/deductions/k-receipt [post]
 func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
-	var input Input
+	var input Deduction
 	err := c.Bind(&input)
 	if err != nil {
 		c.Logger().Printf("error reading request body: %v", err)
