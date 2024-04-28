@@ -53,7 +53,7 @@ func handleError(c echo.Context, errStatus int, err error, action, errMsg string
 	return c.JSON(errStatus, Err{Message: errMsg})
 }
 
-func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction ValidatorFunc, setDeduction SetterFunc, output OutputFunc) error {
+func (h *Handler) processDeduction(c echo.Context, validateDeduction ValidatorFunc, setDeduction SetterFunc, output OutputFunc) error {
 	var input Deduction
 	if err := validateInput(c, &input); err != nil {
 		return handleError(c, http.StatusBadRequest, err, "reading request body", err.Error())
@@ -82,7 +82,7 @@ func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction Validato
 //			@Failure		500	            {object}	Err
 //			@Router			/admin/deductions/personal [post]
 func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
-	return h.DeductionProcessing(c, deduction.ValidatePersonalDeduction, h.store.SetPersonalDeduction, outputToPersonalDeduction)
+	return h.processDeduction(c, deduction.ValidatePersonalDeduction, h.store.SetPersonalDeduction, outputToPersonalDeduction)
 }
 
 // SetKReceiptDeductionHandler
@@ -100,5 +100,5 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 //			@Failure		500	            {object}	Err
 //			@Router			/admin/deductions/k-receipt [post]
 func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
-	return h.DeductionProcessing(c, deduction.ValidateKReceiptDeduction, h.store.SetKReceiptDeduction, outputToKReceiptDeduction)
+	return h.processDeduction(c, deduction.ValidateKReceiptDeduction, h.store.SetKReceiptDeduction, outputToKReceiptDeduction)
 }
