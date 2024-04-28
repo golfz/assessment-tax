@@ -52,19 +52,19 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInput.Error()})
 	}
 
-	err = deduction.ValidatePersonalDeduction(input.Amount)
+	err = deduction.ValidatePersonalDeduction(input.Deduction)
 	if err != nil {
 		c.Logger().Printf("error validating personal deduction: %v", err)
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidPersonalDeduction.Error()})
 	}
 
-	err = h.store.SetPersonalDeduction(input.Amount)
+	err = h.store.SetPersonalDeduction(input.Deduction)
 	if err != nil {
 		c.Logger().Printf("error setting personal deduction: %v", err)
 		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingPersonalDeduction.Error()})
 	}
 
-	return c.JSON(http.StatusOK, PersonalDeduction{PersonalDeduction: input.Amount})
+	return c.JSON(http.StatusOK, PersonalDeduction{Deduction: input.Deduction})
 }
 
 // SetKReceiptDeductionHandler
@@ -95,17 +95,17 @@ func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInput.Error()})
 	}
 
-	err = deduction.ValidateKReceiptDeduction(input.Amount)
+	err = deduction.ValidateKReceiptDeduction(input.Deduction)
 	if err != nil {
 		c.Logger().Printf("error validating k-receipt deduction: %v", err)
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidKReceiptDeduction.Error()})
 	}
 
-	err = h.store.SetKReceiptDeduction(input.Amount)
+	err = h.store.SetKReceiptDeduction(input.Deduction)
 	if err != nil {
 		c.Logger().Printf("error setting k-receipt deduction: %v", err)
 		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingKReceiptDeduction.Error()})
 	}
 
-	return c.JSON(http.StatusOK, KReceiptDeduction{KReceiptDeduction: input.Amount})
+	return c.JSON(http.StatusOK, KReceiptDeduction{Deduction: input.Deduction})
 }
