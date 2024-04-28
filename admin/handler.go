@@ -77,7 +77,7 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 	data, statusCode, err := h.DeductionProcessing(c, ProcessingInput{
 		validateDeduction:    deduction.ValidatePersonalDeduction,
 		setDeduction:         h.store.SetPersonalDeduction,
-		errValidationInvalid: ErrInvalidPersonalDeduction,
+		errValidationInvalid: ErrInvalidInputDeduction,
 		errSettingDeduction:  ErrSettingPersonalDeduction,
 	})
 	if err != nil {
@@ -104,7 +104,7 @@ func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
 	data, statusCode, err := h.DeductionProcessing(c, ProcessingInput{
 		validateDeduction:    deduction.ValidateKReceiptDeduction,
 		setDeduction:         h.store.SetKReceiptDeduction,
-		errValidationInvalid: ErrInvalidKReceiptDeduction,
+		errValidationInvalid: ErrInvalidInputDeduction,
 		errSettingDeduction:  ErrSettingKReceiptDeduction,
 	})
 	if err != nil {
