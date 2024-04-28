@@ -1,21 +1,22 @@
 package postgres
 
-func (p *Postgres) SetPersonalDeduction(amount float64) error {
-	updateSql := `UPDATE deductions SET amount = $1 WHERE name = 'personal'`
-	_, err := p.DB.Exec(updateSql, amount)
-	if err != nil {
-		return err
-	}
+type deductionType string
 
-	return nil
+const (
+	personalDeduction  deductionType = "personal"
+	kReceiptDeduction  deductionType = "k-receipt"
+	updateDeductionSQL               = "UPDATE deductions SET amount = $1 WHERE name = $2"
+)
+
+func (p *Postgres) setDeduction(deducType deductionType, amount float64) error {
+	_, err := p.DB.Exec(updateDeductionSQL, amount, deducType)
+	return err
+}
+
+func (p *Postgres) SetPersonalDeduction(amount float64) error {
+	return p.setDeduction(personalDeduction, amount)
 }
 
 func (p *Postgres) SetKReceiptDeduction(amount float64) error {
-	updateSql := `UPDATE deductions SET amount = $1 WHERE name = 'k-receipt'`
-	_, err := p.DB.Exec(updateSql, amount)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return p.setDeduction(kReceiptDeduction, amount)
 }

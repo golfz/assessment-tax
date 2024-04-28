@@ -5,18 +5,16 @@ import (
 )
 
 const (
-	kPort        = "PORT"
-	kDatabaseURL = "DATABASE_URL"
+	kPort       = "PORT"
+	defaultPort = 8080
 
-	defaultPort        = 8080
+	kDatabaseURL       = "DATABASE_URL"
 	defaultDatabaseURL = "postgresql://postgres:postgres@localhost:5432/ktaxes?sslmode=disable"
-)
 
-const (
-	kAdminUsername = "ADMIN_USERNAME"
-	kAdminPassword = "ADMIN_PASSWORD"
-
+	kAdminUsername       = "ADMIN_USERNAME"
 	defaultAdminUsername = ""
+
+	kAdminPassword       = "ADMIN_PASSWORD"
 	defaultAdminPassword = ""
 )
 
@@ -38,16 +36,16 @@ func NewWith(cfgGetter ConfigGetter) *Config {
 	}
 }
 
-func getString(fn ConfigGetter, key, defaultValue string) string {
-	result := fn(key)
+func getString(getter ConfigGetter, key, defaultValue string) string {
+	result := getter(key)
 	if result == "" {
 		return defaultValue
 	}
 	return result
 }
 
-func getInt(fn ConfigGetter, key string, defaultValue int) int {
-	v := fn(key)
+func getInt(getter ConfigGetter, key string, defaultValue int) int {
+	v := getter(key)
 	result, err := strconv.Atoi(v)
 	if err != nil {
 		return defaultValue

@@ -50,7 +50,8 @@ func TestParseTaxRecords_Success(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Act
-			got, err := parseTaxRecords(tc.records)
+			cr := NewCSVReader(nil)
+			got, err := cr.parseTaxRecords(tc.records)
 
 			// Assert
 			assert.NoError(t, err)
@@ -69,7 +70,8 @@ func TestParseTaxRecords_Error(t *testing.T) {
 		}
 
 		// Act
-		_, err := parseTaxRecords(records)
+		cr := NewCSVReader(nil)
+		_, err := cr.parseTaxRecords(records)
 
 		// Assert
 		assert.Error(t, err)
@@ -83,7 +85,8 @@ func TestParseTaxRecords_Error(t *testing.T) {
 		}
 
 		// Act
-		_, err := parseTaxRecords(records)
+		cr := NewCSVReader(nil)
+		_, err := cr.parseTaxRecords(records)
 
 		// Assert
 		assert.Error(t, err)
@@ -97,7 +100,8 @@ func TestParseTaxRecords_Error(t *testing.T) {
 		}
 
 		// Act
-		_, err := parseTaxRecords(records)
+		cr := NewCSVReader(nil)
+		_, err := cr.parseTaxRecords(records)
 
 		// Assert
 		assert.Error(t, err)
@@ -111,7 +115,8 @@ func TestParseTaxRecords_Error(t *testing.T) {
 		}
 
 		// Act
-		_, err := parseTaxRecords(records)
+		cr := NewCSVReader(nil)
+		_, err := cr.parseTaxRecords(records)
 
 		// Assert
 		assert.Error(t, err)
@@ -125,7 +130,8 @@ func TestParseTaxRecords_Error(t *testing.T) {
 		}
 
 		// Act
-		_, err := parseTaxRecords(records)
+		cr := NewCSVReader(nil)
+		_, err := cr.parseTaxRecords(records)
 
 		// Assert
 		assert.Error(t, err)
@@ -139,14 +145,15 @@ func TestParseTaxRecords_Error(t *testing.T) {
 		}
 
 		// Act
-		_, err := parseTaxRecords(records)
+		cr := NewCSVReader(nil)
+		_, err := cr.parseTaxRecords(records)
 
 		// Assert
 		assert.Error(t, err)
 	})
 }
 
-func TestReadCSV(t *testing.T) {
+func TestReadRecords(t *testing.T) {
 	// Arrange
 	t.Run("success", func(t *testing.T) {
 		data := "totalIncome,wht,donation" + "\n"
@@ -177,7 +184,8 @@ func TestReadCSV(t *testing.T) {
 		r := bytes.NewReader([]byte(data))
 
 		// Act
-		got, err := readCSV(r)
+		cr := NewCSVReader(r)
+		got, err := cr.readRecords()
 
 		// Assert
 		assert.NoError(t, err)
@@ -191,7 +199,8 @@ func TestReadCSV(t *testing.T) {
 		r := bytes.NewReader([]byte(data))
 
 		// Act
-		_, err := readCSV(r)
+		cr := NewCSVReader(r)
+		_, err := cr.readRecords()
 
 		// Assert
 		assert.Error(t, err)

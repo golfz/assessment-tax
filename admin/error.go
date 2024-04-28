@@ -5,10 +5,8 @@ import (
 )
 
 var (
-	ErrReadingRequestBody       = errors.New("cannot reading request body")
-	ErrInvalidInput             = errors.New("invalid input")
-	ErrInvalidPersonalDeduction = errors.New("invalid personal deduction")
-	ErrInvalidKReceiptDeduction = errors.New("invalid k-receipt deduction")
-	ErrSettingPersonalDeduction = errors.New("error setting personal deduction")
-	ErrSettingKReceiptDeduction = errors.New("error setting k-receipt deduction")
+	ErrReadingRequestBody    = errors.New("cannot reading request body")
+	ErrInputValidation       = errors.New("invalid input")
+	ErrInvalidInputDeduction = errors.New("invalid input deduction")
+	ErrSettingDeduction      = errors.New("error setting deduction")
 )

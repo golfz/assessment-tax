@@ -20,11 +20,11 @@ import (
 
 func TestSetPersonalDeductionHandler_Integration_WithDefault_Success(t *testing.T) {
 	// Arrange
-	input := admin.Input{
-		Amount: deduction.DefaultPersonalDeduction,
+	input := admin.Deduction{
+		Deduction: deduction.DefaultPersonalDeduction,
 	}
 	want := admin.PersonalDeduction{
-		PersonalDeduction: deduction.DefaultPersonalDeduction,
+		Deduction: deduction.DefaultPersonalDeduction,
 	}
 
 	cfg := config.NewWith(os.Getenv)
@@ -60,11 +60,11 @@ func TestSetPersonalDeductionHandler_Integration_WithDefault_Success(t *testing.
 
 func TestSetKReceiptDeductionHandler_Integration_WithDefault_Success(t *testing.T) {
 	// Arrange
-	input := admin.Input{
-		Amount: deduction.DefaultKReceiptDeduction,
+	input := admin.Deduction{
+		Deduction: deduction.DefaultKReceiptDeduction,
 	}
 	want := admin.KReceiptDeduction{
-		KReceiptDeduction: deduction.DefaultKReceiptDeduction,
+		Deduction: deduction.DefaultKReceiptDeduction,
 	}
 
 	cfg := config.NewWith(os.Getenv)

@@ -24,6 +24,11 @@ type Err struct {
 	Message string `json:"message"`
 }
 
+func (h *Handler) handleError(c echo.Context, errStatus int, err error, action, errMsg string) error {
+	c.Logger().Printf("error %s: %v", action, err)
+	return c.JSON(errStatus, Err{Message: errMsg})
+}
+
 // CalculateTaxHandler
 //
 //		@Summary		Calculate tax
@@ -40,29 +45,25 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	var taxInfo TaxInformation
 	err := c.Bind(&taxInfo)
 	if err != nil {
-		c.Logger().Printf("error reading request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingRequestBody.Error()})
+		return h.handleError(c, http.StatusBadRequest, err, "reading request body", ErrReadingRequestBody.Error())
 	}
 
 	validate := validator.New()
 	if err := validate.Struct(taxInfo); err != nil {
-		c.Logger().Printf("error validating request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidTaxInformation.Error()})
+		return h.handleError(c, http.StatusBadRequest, err, "validating request body", ErrInvalidTaxInformation.Error())
 	}
 
 	deductionData, err := h.store.GetDeduction()
 	if err != nil {
-		c.Logger().Printf("error getting deduction: %v", err)
-		return c.JSON(http.StatusInternalServerError, Err{Message: ErrGettingDeduction.Error()})
+		return h.handleError(c, http.StatusInternalServerError, err, "getting deduction", ErrGettingDeduction.Error())
 	}
 
 	result, err := CalculateTax(taxInfo, deductionData)
 	if err != nil {
-		c.Logger().Printf("error calculating tax: %v", err)
 		if errors.Is(err, ErrInvalidTaxInformation) {
-			return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidTaxInformation.Error()})
+			return h.handleError(c, http.StatusBadRequest, err, "calculating tax", ErrInvalidTaxInformation.Error())
 		}
-		return c.JSON(http.StatusInternalServerError, Err{Message: ErrCalculatingTax.Error()})
+		return h.handleError(c, http.StatusInternalServerError, err, "calculating tax", ErrCalculatingTax.Error())
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -83,28 +84,29 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 func (h *Handler) UploadCSVHandler(c echo.Context) error {
 	file, err := c.FormFile("taxFile")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrUploadingFile.Error()})
+		return h.handleError(c, http.StatusBadRequest, err, "uploading file", ErrUploadingFile.Error())
 	}
+
 	src, err := file.Open()
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrUploadingFile.Error()})
+		return h.handleError(c, http.StatusBadRequest, err, "opening file", ErrUploadingFile.Error())
 	}
 	defer src.Close()
 
-	records, err := readCSV(src)
+	cr := NewCSVReader(src)
+	records, err := cr.readRecords()
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingCSV.Error()})
+		return h.handleError(c, http.StatusBadRequest, err, "reading csv files", ErrReadingCSV.Error())
 	}
 
 	deductionData, err := h.store.GetDeduction()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Err{Message: ErrGettingDeduction.Error()})
+		return h.handleError(c, http.StatusInternalServerError, err, "getting deduction", ErrGettingDeduction.Error())
 	}
 
 	result, err := CalculateTaxFromCSV(records, deductionData)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Err{Message: ErrCalculatingTax.Error()})
-
+		return h.handleError(c, http.StatusInternalServerError, err, "calculating tax", ErrCalculatingTax.Error())
 	}
 
 	return c.JSON(http.StatusOK, result)

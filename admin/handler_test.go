@@ -98,7 +98,7 @@ func TestSetPersonalDeductionHandler_Success(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})
+			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", Deduction{Deduction: tc.amount})
 			mock.ExpectToCall(MethodSetPersonalDeduction)
 
 			// Act
@@ -113,7 +113,7 @@ func TestSetPersonalDeductionHandler_Success(t *testing.T) {
 			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
 			}
-			assert.Equal(t, tc.amount, got.PersonalDeduction)
+			assert.Equal(t, tc.amount, got.Deduction)
 		})
 	}
 }
@@ -155,14 +155,14 @@ func TestSetPersonalDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrInvalidInput.Error(), got.Message)
+		assert.Equal(t, ErrInputValidation.Error(), got.Message)
 	})
 
 	t.Run("SetPersonalDeduction() error", func(t *testing.T) {
 		// Arrange
 		body := struct{ Amount float64 }{Amount: 70_000}
 		resp, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", body)
-		mock.err = ErrSettingPersonalDeduction
+		mock.err = ErrSettingDeduction
 
 		// Act
 		err := h.SetPersonalDeductionHandler(c)
@@ -175,7 +175,7 @@ func TestSetPersonalDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrSettingPersonalDeduction.Error(), got.Message)
+		assert.Equal(t, ErrSettingDeduction.Error(), got.Message)
 	})
 }
 
@@ -201,7 +201,7 @@ func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", Input{Amount: tc.amount})
+			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/personal", Deduction{Deduction: tc.amount})
 
 			// Act
 			err := h.SetPersonalDeductionHandler(c)
@@ -214,7 +214,7 @@ func TestSetPersonalDeductionHandler_ValidateAmount_Error(t *testing.T) {
 				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
 			}
 			assert.NotEmpty(t, got.Message)
-			assert.Equal(t, ErrInvalidPersonalDeduction.Error(), got.Message)
+			assert.Equal(t, ErrInvalidInputDeduction.Error(), got.Message)
 		})
 	}
 }
@@ -241,7 +241,7 @@ func TestSetKReceiptDeductionHandler_Success(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+			rec, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", Deduction{Deduction: tc.amount})
 			mock.ExpectToCall(MethodSetKReceiptDeduction)
 
 			// Act
@@ -256,7 +256,7 @@ func TestSetKReceiptDeductionHandler_Success(t *testing.T) {
 			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 				t.Errorf("expected response body to be valid json, got %s", rec.Body.String())
 			}
-			assert.Equal(t, tc.amount, got.KReceiptDeduction)
+			assert.Equal(t, tc.amount, got.Deduction)
 		})
 	}
 }
@@ -298,14 +298,14 @@ func TestSetKReceiptDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrInvalidInput.Error(), got.Message)
+		assert.Equal(t, ErrInputValidation.Error(), got.Message)
 	})
 
 	t.Run("call SetKReceiptDeduction() error", func(t *testing.T) {
 		// Arrange
 		body := struct{ Amount float64 }{Amount: 70_000}
 		resp, c, h, mock := setup(http.MethodPost, "/admin/deductions/k-receipt", body)
-		mock.err = ErrInvalidKReceiptDeduction
+		mock.err = ErrInvalidInputDeduction
 
 		// Act
 		err := h.SetKReceiptDeductionHandler(c)
@@ -318,7 +318,7 @@ func TestSetKReceiptDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrSettingKReceiptDeduction.Error(), got.Message)
+		assert.Equal(t, ErrSettingDeduction.Error(), got.Message)
 	})
 }
 
@@ -331,24 +331,24 @@ func TestSetKReceiptDeductionHandler_ValidateAmount_Error(t *testing.T) {
 		{
 			name:      "amount less than minimum k-receipt deduction; expected error",
 			amount:    deduction.MinKReceiptDeduction - 1,
-			wantError: ErrInvalidInput,
+			wantError: ErrInputValidation,
 		},
 		{
 			name:      "amount equal minimum k-receipt deduction boundary; expected error",
 			amount:    deduction.MinKReceiptDeduction,
-			wantError: ErrInvalidKReceiptDeduction,
+			wantError: ErrInvalidInputDeduction,
 		},
 		{
 			name:      "amount more than maximum k-receipt deduction",
 			amount:    deduction.MaxKReceiptDeduction + 1,
-			wantError: ErrInvalidKReceiptDeduction,
+			wantError: ErrInvalidInputDeduction,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Arrange
-			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", Input{Amount: tc.amount})
+			rec, c, h, _ := setup(http.MethodPost, "/admin/deductions/k-receipt", Deduction{Deduction: tc.amount})
 
 			// Act
 			err := h.SetKReceiptDeductionHandler(c)

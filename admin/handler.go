@@ -24,6 +24,49 @@ type Err struct {
 	Message string `json:"message"`
 }
 
+type ValidatorFunc func(float64) error
+type SetterFunc func(float64) error
+type OutputFunc func(Deduction) interface{}
+
+func outputToPersonalDeduction(input Deduction) interface{} {
+	return PersonalDeduction(input)
+}
+
+func outputToKReceiptDeduction(input Deduction) interface{} {
+	return KReceiptDeduction(input)
+}
+
+func (h *Handler) validateInput(c echo.Context, input *Deduction) (err error) {
+	err = c.Bind(input)
+	if err != nil {
+		return ErrReadingRequestBody
+	}
+	validate := validator.New()
+	if err = validate.Struct(*input); err != nil {
+		return ErrInputValidation
+	}
+	return
+}
+
+func (h *Handler) handleError(c echo.Context, errStatus int, err error, action, errMsg string) error {
+	c.Logger().Printf("error %s: %v", action, err)
+	return c.JSON(errStatus, Err{Message: errMsg})
+}
+
+func (h *Handler) processDeduction(c echo.Context, validateDeduction ValidatorFunc, setDeduction SetterFunc, output OutputFunc) error {
+	var input Deduction
+	if err := h.validateInput(c, &input); err != nil {
+		return h.handleError(c, http.StatusBadRequest, err, "reading request body", err.Error())
+	}
+	if err := validateDeduction(input.Deduction); err != nil {
+		return h.handleError(c, http.StatusBadRequest, err, "validating deduction", ErrInvalidInputDeduction.Error())
+	}
+	if err := setDeduction(input.Deduction); err != nil {
+		return h.handleError(c, http.StatusInternalServerError, err, "setting deduction", ErrSettingDeduction.Error())
+	}
+	return c.JSON(http.StatusOK, output(input))
+}
+
 // SetPersonalDeductionHandler
 //
 //	     @Security       BasicAuth
@@ -31,7 +74,7 @@ type Err struct {
 //			@Description	Admin set personal deduction
 //			@Tags			admin
 //		    @Accept			json
-//		    @Param			amount		body		Input	true		"Amount to set personal deduction"
+//		    @Param			amount		body		Deduction	true		"Amount to set personal deduction"
 //			@Produce		json
 //			@Success		200	            {object}	PersonalDeduction
 //			@Failure		400	            {object}	Err
@@ -39,73 +82,23 @@ type Err struct {
 //			@Failure		500	            {object}	Err
 //			@Router			/admin/deductions/personal [post]
 func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
-	var input Input
-	err := c.Bind(&input)
-	if err != nil {
-		c.Logger().Printf("error reading request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingRequestBody.Error()})
-	}
-
-	validate := validator.New()
-	if err := validate.Struct(input); err != nil {
-		c.Logger().Printf("error validating request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInput.Error()})
-	}
-
-	err = deduction.ValidatePersonalDeduction(input.Amount)
-	if err != nil {
-		c.Logger().Printf("error validating personal deduction: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidPersonalDeduction.Error()})
-	}
-
-	err = h.store.SetPersonalDeduction(input.Amount)
-	if err != nil {
-		c.Logger().Printf("error setting personal deduction: %v", err)
-		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingPersonalDeduction.Error()})
-	}
-
-	return c.JSON(http.StatusOK, PersonalDeduction{PersonalDeduction: input.Amount})
+	return h.processDeduction(c, deduction.ValidatePersonalDeduction, h.store.SetPersonalDeduction, outputToPersonalDeduction)
 }
 
 // SetKReceiptDeductionHandler
 //
-//	         @Security       BasicAuth
-//				@Summary		Admin set k-receipt deduction
-//				@Description	Admin set k-receipt deduction
-//				@Tags			admin
-//			    @Accept			json
-//			    @Param			amount		body		Input	true		"Amount to set personal deduction"
-//				@Produce		json
-//				@Success		200	            {object}	KReceiptDeduction
-//				@Failure		400	            {object}	Err
-//				@Failure		401	            {object}	Err
-//				@Failure		500	            {object}	Err
-//				@Router			/admin/deductions/k-receipt [post]
+//	     @Security       BasicAuth
+//			@Summary		Admin set k-receipt deduction
+//			@Description	Admin set k-receipt deduction
+//			@Tags			admin
+//			@Accept			json
+//			@Param			amount		body		Deduction	true		"Amount to set personal deduction"
+//			@Produce		json
+//			@Success		200	            {object}	KReceiptDeduction
+//			@Failure		400	            {object}	Err
+//			@Failure		401	            {object}	Err
+//			@Failure		500	            {object}	Err
+//			@Router			/admin/deductions/k-receipt [post]
 func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
-	var input Input
-	err := c.Bind(&input)
-	if err != nil {
-		c.Logger().Printf("error reading request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingRequestBody.Error()})
-	}
-
-	validate := validator.New()
-	if err := validate.Struct(input); err != nil {
-		c.Logger().Printf("error validating request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInput.Error()})
-	}
-
-	err = deduction.ValidateKReceiptDeduction(input.Amount)
-	if err != nil {
-		c.Logger().Printf("error validating k-receipt deduction: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidKReceiptDeduction.Error()})
-	}
-
-	err = h.store.SetKReceiptDeduction(input.Amount)
-	if err != nil {
-		c.Logger().Printf("error setting k-receipt deduction: %v", err)
-		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingKReceiptDeduction.Error()})
-	}
-
-	return c.JSON(http.StatusOK, KReceiptDeduction{KReceiptDeduction: input.Amount})
+	return h.processDeduction(c, deduction.ValidateKReceiptDeduction, h.store.SetKReceiptDeduction, outputToKReceiptDeduction)
 }

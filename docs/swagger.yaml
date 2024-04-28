@@ -1,15 +1,15 @@
 basePath: /
 definitions:
-  admin.Err:
-    properties:
-      message:
-        type: string
-    type: object
-  admin.Input:
+  admin.Deduction:
     properties:
       amount:
         minimum: 0
         type: number
+    type: object
+  admin.Err:
+    properties:
+      message:
+        type: string
     type: object
   admin.KReceiptDeduction:
     properties:
@@ -109,7 +109,7 @@ paths:
         name: amount
         required: true
         schema:
-          $ref: '#/definitions/admin.Input'
+          $ref: '#/definitions/admin.Deduction'
       produces:
       - application/json
       responses:
@@ -145,7 +145,7 @@ paths:
         name: amount
         required: true
         schema:
-          $ref: '#/definitions/admin.Input'
+          $ref: '#/definitions/admin.Deduction'
       produces:
       - application/json
       responses:

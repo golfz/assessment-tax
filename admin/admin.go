@@ -1,13 +1,13 @@
 package admin
 
-type Input struct {
-	Amount float64 `json:"amount" validate:"min=0"`
+type Deduction struct {
+	Deduction float64 `json:"amount" validate:"min=0"`
 }
 
 type PersonalDeduction struct {
-	PersonalDeduction float64 `json:"personalDeduction"`
+	Deduction float64 `json:"personalDeduction"`
 }
 
 type KReceiptDeduction struct {
-	KReceiptDeduction float64 `json:"kReceipt"`
+	Deduction float64 `json:"kReceipt"`
 }
