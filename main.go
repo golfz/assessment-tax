@@ -51,6 +51,19 @@ func startServer(e *echo.Echo, cfg *config.Config) {
 	}
 }
 
+func waitForShutdown(ctx context.Context, e *echo.Echo) {
+	<-ctx.Done()
+	fmt.Println("shutting down the server")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	fmt.Println("server gracefully stopped")
+}
+
 // @title		K-Tax API
 // @version		1.0
 // @description This is an API for K-Tax.
@@ -73,15 +86,5 @@ func main() {
 
 	go startServer(e, cfg)
 
-	// wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
-	<-ctx.Done()
-	fmt.Println("shutting down the server")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
-	}
-
-	fmt.Println("server gracefully stopped")
+	waitForShutdown(ctx, e)
 }
