@@ -155,7 +155,7 @@ func TestSetPersonalDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrInvalidInput.Error(), got.Message)
+		assert.Equal(t, ErrInputValidation.Error(), got.Message)
 	})
 
 	t.Run("SetPersonalDeduction() error", func(t *testing.T) {
@@ -298,7 +298,7 @@ func TestSetKReceiptDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrInvalidInput.Error(), got.Message)
+		assert.Equal(t, ErrInputValidation.Error(), got.Message)
 	})
 
 	t.Run("call SetKReceiptDeduction() error", func(t *testing.T) {
@@ -331,7 +331,7 @@ func TestSetKReceiptDeductionHandler_ValidateAmount_Error(t *testing.T) {
 		{
 			name:      "amount less than minimum k-receipt deduction; expected error",
 			amount:    deduction.MinKReceiptDeduction - 1,
-			wantError: ErrInvalidInput,
+			wantError: ErrInputValidation,
 		},
 		{
 			name:      "amount equal minimum k-receipt deduction boundary; expected error",

@@ -36,27 +36,33 @@ func outputToKReceiptDeduction(input Deduction) interface{} {
 	return KReceiptDeduction(input)
 }
 
-func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction ValidatorFunc, setDeduction SetterFunc, output OutputFunc) error {
-	var input Deduction
-	err := c.Bind(&input)
+func (h *Handler) validateInput(c echo.Context, input *Deduction) (err error) {
+	err = c.Bind(input)
 	if err != nil {
-		c.Logger().Printf("error reading request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingRequestBody.Error()})
+		return ErrReadingRequestBody
 	}
 	validate := validator.New()
-	if err := validate.Struct(input); err != nil {
-		c.Logger().Printf("error validating request body: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInput.Error()})
+	if err = validate.Struct(*input); err != nil {
+		return ErrInputValidation
 	}
-	err = validateDeduction(input.Deduction)
-	if err != nil {
-		c.Logger().Printf("error validating deduction: %v", err)
-		return c.JSON(http.StatusBadRequest, Err{Message: ErrInvalidInputDeduction.Error()})
+	return
+}
+
+func (h *Handler) handleError(c echo.Context, errStatus int, err error, action, errMsg string) error {
+	c.Logger().Printf("error %s: %v", action, err)
+	return c.JSON(errStatus, Err{Message: errMsg})
+}
+
+func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction ValidatorFunc, setDeduction SetterFunc, output OutputFunc) error {
+	var input Deduction
+	if err := h.validateInput(c, &input); err != nil {
+		return h.handleError(c, http.StatusBadRequest, err, "reading request body", err.Error())
 	}
-	err = setDeduction(input.Deduction)
-	if err != nil {
-		c.Logger().Printf("error setting deduction: %v", err)
-		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingDeduction.Error()})
+	if err := validateDeduction(input.Deduction); err != nil {
+		return h.handleError(c, http.StatusBadRequest, err, "validating deduction", ErrInvalidInputDeduction.Error())
+	}
+	if err := setDeduction(input.Deduction); err != nil {
+		return h.handleError(c, http.StatusInternalServerError, err, "setting deduction", ErrSettingDeduction.Error())
 	}
 	return c.JSON(http.StatusOK, output(input))
 }
