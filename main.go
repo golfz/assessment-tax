@@ -24,20 +24,7 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-// @title		K-Tax API
-// @version		1.0
-// @description This is an API for K-Tax.
-// @host		localhost:8080
-// @BasePath    /
-// @securityDefinitions.basic BasicAuth
-func main() {
-	cfg := config.NewWith(os.Getenv)
-
-	pg, err := postgres.New(cfg.DatabaseURL)
-	if err != nil {
-		log.Fatalf("exit: %v", err)
-	}
-
+func echoSetup(pg *postgres.Postgres, cfg *config.Config) *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.Logger())
 
@@ -53,6 +40,25 @@ func main() {
 	hAdmin := admin.New(pg)
 	a.POST("/deductions/personal", hAdmin.SetPersonalDeductionHandler)
 	a.POST("/deductions/k-receipt", hAdmin.SetKReceiptDeductionHandler)
+
+	return e
+}
+
+// @title		K-Tax API
+// @version		1.0
+// @description This is an API for K-Tax.
+// @host		localhost:8080
+// @BasePath    /
+// @securityDefinitions.basic BasicAuth
+func main() {
+	cfg := config.NewWith(os.Getenv)
+
+	pg, err := postgres.New(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("exit: %v", err)
+	}
+
+	e := echoSetup(pg, cfg)
 
 	// monitor shutdown signal
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
