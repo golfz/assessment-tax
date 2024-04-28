@@ -86,6 +86,7 @@ func (h *Handler) UploadCSVHandler(c echo.Context) error {
 	if err != nil {
 		return h.handleError(c, http.StatusBadRequest, err, "uploading file", ErrUploadingFile.Error())
 	}
+
 	src, err := file.Open()
 	if err != nil {
 		return h.handleError(c, http.StatusBadRequest, err, "opening file", ErrUploadingFile.Error())
