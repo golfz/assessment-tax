@@ -10,6 +10,23 @@ var (
 	ErrCannotScanDeduction  = errors.New("unable to scan deduction")
 )
 
+const (
+	namePersonalDeduction = "personal"
+	nameKReceiptDeduction = "k-receipt"
+	nameDonationDeduction = "donation"
+)
+
+func applyDeductionValue(name string, amount float64, deductionData *deduction.Deduction) {
+	switch name {
+	case namePersonalDeduction:
+		deductionData.Personal = amount
+	case nameKReceiptDeduction:
+		deductionData.KReceipt = amount
+	case nameDonationDeduction:
+		deductionData.Donation = amount
+	}
+}
+
 func (p *Postgres) GetDeduction() (deduction.Deduction, error) {
 	selectSql := `SELECT name, amount FROM deductions`
 	rows, err := p.DB.Query(selectSql)
@@ -26,14 +43,8 @@ func (p *Postgres) GetDeduction() (deduction.Deduction, error) {
 		if err != nil {
 			return deduction.Deduction{}, ErrCannotScanDeduction
 		}
-		switch name {
-		case "personal":
-			deductionData.Personal = amount
-		case "k-receipt":
-			deductionData.KReceipt = amount
-		case "donation":
-			deductionData.Donation = amount
-		}
+
+		applyDeductionValue(name, amount, &deductionData)
 	}
 
 	return deductionData, nil
