@@ -28,8 +28,8 @@ func applyDeductionValue(name string, amount float64, deductionData *deduction.D
 }
 
 func (p *Postgres) GetDeduction() (deduction.Deduction, error) {
-	selectSql := `SELECT name, amount FROM deductions`
-	rows, err := p.DB.Query(selectSql)
+	selectSQL := `SELECT name, amount FROM deductions`
+	rows, err := p.DB.Query(selectSQL)
 	if err != nil {
 		return deduction.Deduction{}, ErrCannotQueryDeduction
 	}
