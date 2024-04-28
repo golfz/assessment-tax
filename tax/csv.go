@@ -6,6 +6,14 @@ import (
 	"strconv"
 )
 
+type CSVReader struct {
+	reader io.Reader
+}
+
+func NewCSVReader(r io.Reader) *CSVReader {
+	return &CSVReader{reader: r}
+}
+
 const (
 	csvHeaderRowIndex = 0
 )
@@ -18,7 +26,7 @@ const (
 	csvColumnDonation
 )
 
-func validateHeader(header []string) error {
+func (cr *CSVReader) validateHeader(header []string) error {
 	if len(header) != 3 {
 		return ErrInvalidCSVHeader
 	}
@@ -30,7 +38,7 @@ func validateHeader(header []string) error {
 	return nil
 }
 
-func getColumnValue(row []string, column csvColumn) (float64, error) {
+func (cr *CSVReader) getColumnValue(row []string, column csvColumn) (float64, error) {
 	result, err := strconv.ParseFloat(row[column], 64)
 	if err != nil {
 		return 0, ErrParsingData
@@ -38,7 +46,7 @@ func getColumnValue(row []string, column csvColumn) (float64, error) {
 	return result, nil
 }
 
-func getTaxInformation(row []string) (TaxInformation, error) {
+func (cr *CSVReader) getTaxInformation(row []string) (TaxInformation, error) {
 	taxInfo := TaxInformation{}
 
 	if len(row) != 3 {
@@ -47,15 +55,15 @@ func getTaxInformation(row []string) (TaxInformation, error) {
 
 	var err error
 
-	if taxInfo.TotalIncome, err = getColumnValue(row, csvColumnTotalIncome); err != nil {
+	if taxInfo.TotalIncome, err = cr.getColumnValue(row, csvColumnTotalIncome); err != nil {
 		return TaxInformation{}, err
 	}
 
-	if taxInfo.WHT, err = getColumnValue(row, csvColumnWHT); err != nil {
+	if taxInfo.WHT, err = cr.getColumnValue(row, csvColumnWHT); err != nil {
 		return TaxInformation{}, err
 	}
 
-	donation, err := getColumnValue(row, csvColumnDonation)
+	donation, err := cr.getColumnValue(row, csvColumnDonation)
 	if err != nil {
 		return TaxInformation{}, err
 	}
@@ -69,12 +77,12 @@ func getTaxInformation(row []string) (TaxInformation, error) {
 	return taxInfo, nil
 }
 
-func parseRow(index int, row []string, data *[]TaxInformation) error {
+func (cr *CSVReader) parseRow(index int, row []string, data *[]TaxInformation) error {
 	if index == csvHeaderRowIndex {
-		return validateHeader(row)
+		return cr.validateHeader(row)
 	}
 
-	taxInfo, err := getTaxInformation(row)
+	taxInfo, err := cr.getTaxInformation(row)
 	if err != nil {
 		return err
 	}
@@ -83,11 +91,11 @@ func parseRow(index int, row []string, data *[]TaxInformation) error {
 	return nil
 }
 
-func parseTaxRecords(records [][]string) ([]TaxInformation, error) {
+func (cr *CSVReader) parseTaxRecords(records [][]string) ([]TaxInformation, error) {
 	result := make([]TaxInformation, 0)
 
 	for rowIndex, rowData := range records {
-		err := parseRow(rowIndex, rowData, &result)
+		err := cr.parseRow(rowIndex, rowData, &result)
 		if err != nil {
 			return nil, err
 		}
@@ -96,12 +104,12 @@ func parseTaxRecords(records [][]string) ([]TaxInformation, error) {
 	return result, nil
 }
 
-func readCSV(r io.Reader) ([]TaxInformation, error) {
-	reader := csv.NewReader(r)
+func (cr *CSVReader) readRecords() ([]TaxInformation, error) {
+	reader := csv.NewReader(cr.reader)
 	records, err := reader.ReadAll()
 	if err != nil {
 		return nil, ErrReadingCSV
 	}
 
-	return parseTaxRecords(records)
+	return cr.parseTaxRecords(records)
 }

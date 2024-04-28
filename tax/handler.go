@@ -91,7 +91,8 @@ func (h *Handler) UploadCSVHandler(c echo.Context) error {
 	}
 	defer src.Close()
 
-	records, err := readCSV(src)
+	cr := NewCSVReader(src)
+	records, err := cr.readRecords()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Err{Message: ErrReadingCSV.Error()})
 	}
