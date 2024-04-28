@@ -51,6 +51,10 @@ func startServer(e *echo.Echo, cfg *config.Config) {
 	}
 }
 
+func monitorShutdownSignal() (ctx context.Context, stop context.CancelFunc) {
+	return signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+}
+
 func waitForShutdown(ctx context.Context, e *echo.Echo) {
 	<-ctx.Done()
 	fmt.Println("shutting down the server")
@@ -80,8 +84,7 @@ func main() {
 
 	e := echoSetup(pg, cfg)
 
-	// monitor shutdown signal
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := monitorShutdownSignal()
 	defer stop()
 
 	go startServer(e, cfg)
