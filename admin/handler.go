@@ -24,19 +24,19 @@ type Err struct {
 	Message string `json:"message"`
 }
 
-func GetPersonalDeduction(input Deduction) interface{} {
-	return PersonalDeduction(input)
-}
-
-func GetKReceiptDeduction(input Deduction) interface{} {
-	return KReceiptDeduction(input)
-}
-
 type ValidatorFunc func(float64) error
 type SetterFunc func(float64) error
 type OutputFunc func(Deduction) interface{}
 
-func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction ValidatorFunc, setDeduction SetterFunc, outputFn OutputFunc) error {
+func outputToPersonalDeduction(input Deduction) interface{} {
+	return PersonalDeduction(input)
+}
+
+func outputToKReceiptDeduction(input Deduction) interface{} {
+	return KReceiptDeduction(input)
+}
+
+func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction ValidatorFunc, setDeduction SetterFunc, output OutputFunc) error {
 	var input Deduction
 	err := c.Bind(&input)
 	if err != nil {
@@ -58,7 +58,7 @@ func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction Validato
 		c.Logger().Printf("error setting deduction: %v", err)
 		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingDeduction.Error()})
 	}
-	return c.JSON(http.StatusOK, outputFn(input))
+	return c.JSON(http.StatusOK, output(input))
 }
 
 // SetPersonalDeductionHandler
@@ -76,7 +76,7 @@ func (h *Handler) DeductionProcessing(c echo.Context, validateDeduction Validato
 //			@Failure		500	            {object}	Err
 //			@Router			/admin/deductions/personal [post]
 func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
-	return h.DeductionProcessing(c, deduction.ValidatePersonalDeduction, h.store.SetPersonalDeduction, GetPersonalDeduction)
+	return h.DeductionProcessing(c, deduction.ValidatePersonalDeduction, h.store.SetPersonalDeduction, outputToPersonalDeduction)
 }
 
 // SetKReceiptDeductionHandler
@@ -94,5 +94,5 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 //				@Failure		500	            {object}	Err
 //				@Router			/admin/deductions/k-receipt [post]
 func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
-	return h.DeductionProcessing(c, deduction.ValidateKReceiptDeduction, h.store.SetKReceiptDeduction, GetKReceiptDeduction)
+	return h.DeductionProcessing(c, deduction.ValidateKReceiptDeduction, h.store.SetKReceiptDeduction, outputToKReceiptDeduction)
 }
