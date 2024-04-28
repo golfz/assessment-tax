@@ -8,7 +8,7 @@ import (
 func collapseAllowance(allowances []Allowance) map[AllowanceType]float64 {
 	result := make(map[AllowanceType]float64)
 	for _, a := range allowances {
-		result[a.Type] += a.Amount // Directly add 'a.Amount' to the map value.
+		result[a.Type] += a.Amount
 	}
 	return result
 }
