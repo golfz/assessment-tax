@@ -3,12 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/golfz/assessment-tax/admin"
 	"github.com/golfz/assessment-tax/config"
 	"github.com/golfz/assessment-tax/postgres"
-	"github.com/golfz/assessment-tax/tax"
+	"github.com/golfz/assessment-tax/router"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"net/http"
 	"os"
@@ -16,12 +14,9 @@ import (
 	"syscall"
 	"time"
 
-	mw "github.com/golfz/assessment-tax/middleware"
-
 	_ "github.com/lib/pq"
 
 	_ "github.com/golfz/assessment-tax/docs"
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func initPostgres(cfg *config.Config) *postgres.Postgres {
@@ -30,26 +25,6 @@ func initPostgres(cfg *config.Config) *postgres.Postgres {
 		log.Fatalf("exit: %v", err)
 	}
 	return pg
-}
-
-func echoSetup(pg *postgres.Postgres, cfg *config.Config) *echo.Echo {
-	e := echo.New()
-	e.Use(middleware.Logger())
-
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
-	hTax := tax.New(pg)
-	e.POST("/tax/calculations", hTax.CalculateTaxHandler)
-	e.POST("/tax/calculations/upload-csv", hTax.UploadCSVHandler)
-
-	a := e.Group("/admin")
-	a.Use(middleware.BasicAuth(mw.BasicAuth(*cfg)))
-
-	hAdmin := admin.New(pg)
-	a.POST("/deductions/personal", hAdmin.SetPersonalDeductionHandler)
-	a.POST("/deductions/k-receipt", hAdmin.SetKReceiptDeductionHandler)
-
-	return e
 }
 
 func startServer(e *echo.Echo, cfg *config.Config) {
@@ -85,7 +60,7 @@ func waitForShutdown(ctx context.Context, e *echo.Echo) {
 func main() {
 	cfg := config.NewWith(os.Getenv)
 	pg := initPostgres(cfg)
-	e := echoSetup(pg, cfg)
+	e := router.New(pg, cfg)
 
 	ctx, stop := monitorShutdownSignal()
 	defer stop()
