@@ -44,6 +44,13 @@ func echoSetup(pg *postgres.Postgres, cfg *config.Config) *echo.Echo {
 	return e
 }
 
+func startServer(e *echo.Echo, cfg *config.Config) {
+	addr := fmt.Sprintf(":%d", cfg.Port)
+	if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
+		e.Logger.Fatal("shutting down the server")
+	}
+}
+
 // @title		K-Tax API
 // @version		1.0
 // @description This is an API for K-Tax.
@@ -64,13 +71,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// Start server
-	go func() {
-		addr := fmt.Sprintf(":%d", cfg.Port)
-		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("shutting down the server")
-		}
-	}()
+	go startServer(e, cfg)
 
 	// wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
 	<-ctx.Done()
