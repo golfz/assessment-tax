@@ -35,11 +35,11 @@ func startServer(e *echo.Echo, cfg *config.Config) {
 	}
 }
 
-func monitorShutdownSignal() (ctx context.Context, stop context.CancelFunc) {
+func listenForShutdownSignal() (ctx context.Context, stop context.CancelFunc) {
 	return signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 }
 
-func waitForShutdown(ctx context.Context, e *echo.Echo) {
+func waitForGracefullyShutdown(ctx context.Context, e *echo.Echo) {
 	<-ctx.Done()
 	fmt.Println("shutting down the server")
 
@@ -63,9 +63,9 @@ func main() {
 	pg := initPostgres(cfg)
 	e := router.New(pg, cfg)
 
-	ctx, stop := monitorShutdownSignal()
+	ctx, stop := listenForShutdownSignal()
 	defer stop()
 
 	go startServer(e, cfg)
-	waitForShutdown(ctx, e)
+	waitForGracefullyShutdown(ctx, e)
 }
