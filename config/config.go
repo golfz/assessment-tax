@@ -5,18 +5,16 @@ import (
 )
 
 const (
-	kPort        = "PORT"
-	kDatabaseURL = "DATABASE_URL"
+	kPort       = "PORT"
+	defaultPort = 8080
 
-	defaultPort        = 8080
+	kDatabaseURL       = "DATABASE_URL"
 	defaultDatabaseURL = "postgresql://postgres:postgres@localhost:5432/ktaxes?sslmode=disable"
-)
 
-const (
-	kAdminUsername = "ADMIN_USERNAME"
-	kAdminPassword = "ADMIN_PASSWORD"
-
+	kAdminUsername       = "ADMIN_USERNAME"
 	defaultAdminUsername = ""
+
+	kAdminPassword       = "ADMIN_PASSWORD"
 	defaultAdminPassword = ""
 )
 
