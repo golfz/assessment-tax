@@ -162,7 +162,7 @@ func TestSetPersonalDeductionHandler_Error(t *testing.T) {
 		// Arrange
 		body := struct{ Amount float64 }{Amount: 70_000}
 		resp, c, h, mock := setup(http.MethodPost, "/admin/deductions/personal", body)
-		mock.err = ErrSettingPersonalDeduction
+		mock.err = ErrSettingDeduction
 
 		// Act
 		err := h.SetPersonalDeductionHandler(c)
@@ -175,7 +175,7 @@ func TestSetPersonalDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrSettingPersonalDeduction.Error(), got.Message)
+		assert.Equal(t, ErrSettingDeduction.Error(), got.Message)
 	})
 }
 
@@ -318,7 +318,7 @@ func TestSetKReceiptDeductionHandler_Error(t *testing.T) {
 			t.Errorf("expected response body to be valid json, got %s", resp.Body.String())
 		}
 		assert.NotEmpty(t, got.Message)
-		assert.Equal(t, ErrSettingKReceiptDeduction.Error(), got.Message)
+		assert.Equal(t, ErrSettingDeduction.Error(), got.Message)
 	})
 }
 
