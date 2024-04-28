@@ -64,7 +64,7 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingPersonalDeduction.Error()})
 	}
 
-	return c.JSON(http.StatusOK, PersonalDeduction{Deduction: input.Deduction})
+	return c.JSON(http.StatusOK, PersonalDeduction(input))
 }
 
 // SetKReceiptDeductionHandler
@@ -107,5 +107,5 @@ func (h *Handler) SetKReceiptDeductionHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, Err{Message: ErrSettingKReceiptDeduction.Error()})
 	}
 
-	return c.JSON(http.StatusOK, KReceiptDeduction{Deduction: input.Deduction})
+	return c.JSON(http.StatusOK, KReceiptDeduction(input))
 }
