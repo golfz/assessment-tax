@@ -24,6 +24,14 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+func initPostgres(cfg *config.Config) *postgres.Postgres {
+	pg, err := postgres.New(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("exit: %v", err)
+	}
+	return pg
+}
+
 func echoSetup(pg *postgres.Postgres, cfg *config.Config) *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.Logger())
@@ -76,18 +84,12 @@ func waitForShutdown(ctx context.Context, e *echo.Echo) {
 // @securityDefinitions.basic BasicAuth
 func main() {
 	cfg := config.NewWith(os.Getenv)
-
-	pg, err := postgres.New(cfg.DatabaseURL)
-	if err != nil {
-		log.Fatalf("exit: %v", err)
-	}
-
+	pg := initPostgres(cfg)
 	e := echoSetup(pg, cfg)
 
 	ctx, stop := monitorShutdownSignal()
 	defer stop()
 
 	go startServer(e, cfg)
-
 	waitForShutdown(ctx, e)
 }
