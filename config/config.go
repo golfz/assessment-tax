@@ -9,7 +9,7 @@ const (
 	defaultPort = 8080
 
 	kDatabaseURL       = "DATABASE_URL"
-	defaultDatabaseURL = "postgresql://postgres:postgres@localhost:5432/ktaxes?sslmode=disable"
+	defaultDatabaseURL = ""
 
 	kAdminUsername       = "ADMIN_USERNAME"
 	defaultAdminUsername = ""
