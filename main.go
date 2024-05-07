@@ -52,12 +52,12 @@ func waitForGracefullyShutdown(ctx context.Context, e *echo.Echo) {
 	fmt.Println("server gracefully stopped")
 }
 
-// @title		K-Tax API
-// @version		1.0
-// @description This is an API for K-Tax.
-// @host		localhost:8080
-// @BasePath    /
-// @securityDefinitions.basic BasicAuth
+//	@title						K-Tax API
+//	@version					1.0
+//	@description				This is an API for K-Tax.
+//	@host						localhost:8080
+//	@BasePath					/
+//	@securityDefinitions.basic	BasicAuth
 func main() {
 	cfg := config.NewWith(os.Getenv)
 	pg := initPostgres(cfg)

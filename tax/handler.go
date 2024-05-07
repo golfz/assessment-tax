@@ -31,16 +31,16 @@ func (h *Handler) handleError(c echo.Context, errStatus int, err error, action, 
 
 // CalculateTaxHandler
 //
-//		@Summary		Calculate tax
-//		@Description	Calculate tax
-//		@Tags			tax
-//	    @Accept			json
-//	    @Param			amount		body		TaxInformation	true		"Amount to calculate tax"
-//		@Produce		json
-//		@Success		200	            {object}	TaxResult
-//		@Failure		400	            {object}	Err
-//		@Failure		500	            {object}	Err
-//		@Router			/tax/calculations [post]
+//	@Summary		Calculate tax
+//	@Description	Calculate tax
+//	@Tags			tax
+//	@Accept			json
+//	@Param			amount	body	TaxInformation	true	"Amount to calculate tax"
+//	@Produce		json
+//	@Success		200	{object}	TaxResult
+//	@Failure		400	{object}	Err
+//	@Failure		500	{object}	Err
+//	@Router			/tax/calculations [post]
 func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 	var taxInfo TaxInformation
 	err := c.Bind(&taxInfo)
@@ -71,16 +71,16 @@ func (h *Handler) CalculateTaxHandler(c echo.Context) error {
 
 // UploadCSVHandler
 //
-//		@Summary		Upload csv file and calculate tax
-//		@Description	Upload csv file and calculate tax
-//		@Tags			tax
-//	    @Accept			multipart/form-data
-//	    @Param			taxFile	formData	file			true	"this is a test file"
-//		@Produce		json
-//		@Success		200	            {object}	CsvTaxResponse
-//		@Failure		400	            {object}	Err
-//		@Failure		500	            {object}	Err
-//		@Router			/tax/calculations/upload-csv [post]
+//	@Summary		Upload csv file and calculate tax
+//	@Description	Upload csv file and calculate tax
+//	@Tags			tax
+//	@Accept			multipart/form-data
+//	@Param			taxFile	formData	file	true	"this is a test file"
+//	@Produce		json
+//	@Success		200	{object}	CsvTaxResponse
+//	@Failure		400	{object}	Err
+//	@Failure		500	{object}	Err
+//	@Router			/tax/calculations/upload-csv [post]
 func (h *Handler) UploadCSVHandler(c echo.Context) error {
 	file, err := c.FormFile("taxFile")
 	if err != nil {
